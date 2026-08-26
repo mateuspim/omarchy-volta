@@ -1,19 +1,20 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
-import Quickshell.Io
 import qs.Ui
 import qs.Commons
+import "." as Volta
 import "Model.js" as Model
 
 Panel {
   id: root
   moduleName: "pym.volta"
-  ipcTarget: "pym.volta"
+  manageIpc: false
 
   property int keyboardRow: 0
   property real wheelAccumulator: 0
   property var displaySinkOptions: []
+  readonly property var audio: Volta.AudioService.audio
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
   readonly property color danger: bar ? bar.urgent : Color.urgent
@@ -78,8 +79,6 @@ Panel {
     }
   }
 
-  AudioModel { id: audio; optionsActive: root.opened }
-
   Connections {
     target: audio
     function onSinkOptionsChanged() { root.scheduleSinkOptionsRefresh() }
@@ -89,21 +88,6 @@ Panel {
     id: sinkOptionsTimer
     interval: 75
     onTriggered: root.refreshSinkOptions()
-  }
-
-  IpcHandler {
-    target: "pym.volta-control"
-    function mute(): void { audio.toggleMute() }
-    function reset(): void { audio.reset() }
-    function lock(): void { audio.toggleLock() }
-    function leftUp(): void { audio.setLeft(audio.left + 0.05) }
-    function leftDown(): void { audio.setLeft(audio.left - 0.05) }
-    function rightUp(): void { audio.setRight(audio.right + 0.05) }
-    function rightDown(): void { audio.setRight(audio.right - 0.05) }
-    function balanceLeft(): void { audio.shiftBalance(-0.03) }
-    function balanceRight(): void { audio.shiftBalance(0.03) }
-    function previousSink(): void { audio.cycleSink(-1) }
-    function nextSink(): void { audio.cycleSink(1) }
   }
 
   BarIconButton {

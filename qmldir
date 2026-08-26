@@ -1,0 +1,2 @@
+singleton AudioService 1.0 AudioService.qml
+AudioModel 1.0 AudioModel.qml
