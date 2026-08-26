@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import Quickshell.Io
 import qs.Ui
 import qs.Commons
 import "Model.js" as Model
@@ -22,6 +23,10 @@ Panel {
   }
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
+
+  onOpenedChanged: {
+    if (opened) Qt.callLater(function() { keySurface.forceActiveFocus() })
+  }
 
   function icon() {
     if (!audio.available) return "󰖁"
@@ -62,6 +67,21 @@ Panel {
   }
 
   AudioModel { id: audio }
+
+  IpcHandler {
+    target: "pym.volta-control"
+    function mute(): void { audio.toggleMute() }
+    function reset(): void { audio.reset() }
+    function lock(): void { audio.toggleLock() }
+    function leftUp(): void { audio.setLeft(audio.left + 0.05) }
+    function leftDown(): void { audio.setLeft(audio.left - 0.05) }
+    function rightUp(): void { audio.setRight(audio.right + 0.05) }
+    function rightDown(): void { audio.setRight(audio.right - 0.05) }
+    function balanceLeft(): void { audio.shiftBalance(-0.03) }
+    function balanceRight(): void { audio.shiftBalance(0.03) }
+    function previousSink(): void { audio.cycleSink(-1) }
+    function nextSink(): void { audio.cycleSink(1) }
+  }
 
   BarIconButton {
     id: button
@@ -161,7 +181,7 @@ Panel {
           Row {
             width: parent.width
             spacing: Style.spacing.xs
-            PanelActionButton { iconText: "󰅁"; tooltipText: "Previous output · Left / Shift+Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: audio.cycleSink(-1) }
+            PanelActionButton { iconText: "󰅁"; tooltipText: "Previous output · Left / Shift+Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(-1); keySurface.forceActiveFocus() } }
             Dropdown {
               id: sinkPicker
               width: parent.width - parent.spacing * 2 - Style.space(44)
@@ -173,7 +193,7 @@ Panel {
               fontFamily: bar ? bar.fontFamily : Style.font.family
               onChanged: function(value) { audio.selectSink(value) }
             }
-            PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: audio.cycleSink(1) }
+            PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
           Text { width: parent.width; text: root.sinkPosition + " of " + audio.sinks.length; color: root.subtle; horizontalAlignment: Text.AlignHCenter; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
         }
@@ -200,9 +220,9 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Locked" : "Unlocked"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "L · Lock channels to equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: audio.toggleLock() }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.muted ? "Unmute" : "Mute"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: audio.toggleMute() }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: audio.reset() }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Locked" : "Unlocked"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "L · Lock channels to equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.muted ? "Unmute" : "Mute"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
 
         Rectangle {

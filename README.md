@@ -35,6 +35,8 @@ omarchy plugin remove pym.volta
 
 Locking averages the current channels and keeps L equal to R while either slider moves. Dragging the balance control preserves the louder channel and attenuates the other side.
 
+The same actions are available for compositor or script keybindings through `omarchy-shell pym.volta-control`: `mute`, `leftUp`, `leftDown`, `rightUp`, `rightDown`, `balanceLeft`, `balanceRight`, `lock`, `reset`, `previousSink`, and `nextSink`.
+
 ## Backend decision
 
 Volta uses the installed Quickshell PipeWire API directly. `PwNode.audio.channels` provides the reactive channel map and writable `PwNode.audio.volumes` provides end-to-end per-channel reads and mutations. Mute and default-node tracking are native as well, so no volume command is spawned and external PipeWire changes update the UI through QML property notifications.
