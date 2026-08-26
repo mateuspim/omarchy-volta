@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "pym.volta",
+  "name": "Volta",
+  "version": "0.1.0",
+  "author": "Mateus Pym",
+  "description": "Per-channel volume and stereo balance controls for Omarchy",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Volta",
+    "description": "Per-channel volume and stereo balance controls",
+    "category": "Audio",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
