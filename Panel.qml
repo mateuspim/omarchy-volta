@@ -160,7 +160,7 @@ Panel {
         Column {
           width: parent.width
           spacing: Style.spacing.xs
-          PanelSectionHeader { text: "OUTPUT"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
+          PanelSectionHeader { text: "OUTPUT  ·  ← / →"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
           Row {
             width: parent.width
             spacing: Style.spacing.xs
@@ -185,8 +185,8 @@ Panel {
           width: parent.width
           spacing: Style.spacing.sm
           PanelSectionHeader { text: "CHANNELS"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
-          ChannelSlider { width: parent.width; label: "LEFT"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
-          ChannelSlider { width: parent.width; label: "RIGHT"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
+          ChannelSlider { width: parent.width; label: "LEFT  ·  J / K"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
+          ChannelSlider { width: parent.width; label: "RIGHT  ·  ⇧J / ⇧K"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
         }
 
         Column {
@@ -203,19 +203,9 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Linked" : "Link"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.muted ? "Unmute" : "Mute"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
-        }
-
-        Text {
-          width: parent.width
-          text: "J/K left  ·  ⇧J/K right  ·  H/L balance  ·  Shift+L link  ·  M mute  ·  Q close"
-          color: root.subtle
-          font.family: bar ? bar.fontFamily : Style.font.family
-          font.pixelSize: Style.font.caption
-          horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.WordWrap
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.muted ? "Unmute" : "Mute") + "  M"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset  R"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
       }
     }
