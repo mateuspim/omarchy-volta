@@ -53,7 +53,6 @@ Panel {
     if (event.text === "K") { audio.setRight(audio.right + 0.05); event.accepted = true; return }
     if (event.text === "J") { audio.setRight(audio.right - 0.05); event.accepted = true; return }
     if (event.key === Qt.Key_L && (event.modifiers & Qt.ShiftModifier)) { audio.toggleLock(); event.accepted = true; return }
-    if (event.key === Qt.Key_C && !(event.modifiers & Qt.ControlModifier)) { audio.toggleLock(); event.accepted = true; return }
     if (event.text === "h") { audio.shiftBalance(-0.03); event.accepted = true; return }
     if (event.text === "l") { audio.shiftBalance(0.03); event.accepted = true; return }
     if (event.text === "m") { audio.toggleMute(); event.accepted = true; return }
@@ -204,14 +203,14 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Linked" : "Link"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "C or Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Linked" : "Link"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.muted ? "Unmute" : "Mute"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
 
         Text {
           width: parent.width
-          text: "J/K left  ·  ⇧J/K right  ·  H/L balance  ·  C link  ·  M mute  ·  Q close"
+          text: "J/K left  ·  ⇧J/K right  ·  H/L balance  ·  Shift+L link  ·  M mute  ·  Q close"
           color: root.subtle
           font.family: bar ? bar.fontFamily : Style.font.family
           font.pixelSize: Style.font.caption
