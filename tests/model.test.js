@@ -5,7 +5,7 @@ import vm from "node:vm"
 const source = fs.readFileSync(new URL("../Model.js", import.meta.url), "utf8")
   .replace(/^\.pragma library\s*/m, "")
 const model = {}
-vm.runInNewContext(source + "\nObject.assign(model, { clamp, clampVolume, percent, channelName, stereoIndices, readStereo, withStereoVolumes, balance, applyBalance, balanceLabel, sinkLabel });", { model, isFinite })
+vm.runInNewContext(source + "\nObject.assign(model, { clamp, clampVolume, percent, channelName, stereoIndices, readStereo, withStereoVolumes, balance, applyBalance, balanceLabel, safeSinkText, sinkLabel });", { model, isFinite })
 
 assert.equal(model.clampVolume(-1), 0)
 assert.equal(model.clampVolume(2), 1.5)
@@ -35,5 +35,10 @@ assert.deepEqual({ ...model.applyBalance(0.2, 0.8, 0) }, { left: 0.8, right: 0.8
 assert.deepEqual({ ...model.applyBalance(1, 1, -0.5) }, { left: 1, right: 0.5 })
 assert.equal(model.balanceLabel(0), "Center")
 assert.equal(model.balanceLabel(-0.42), "42% left")
+assert.equal(model.sinkLabel({ description: "Speakers" }), "Speakers")
+assert.equal(model.sinkLabel({ description: "", nickname: "Headphones" }), "Headphones")
+assert.equal(model.sinkLabel({ description: '<img src="file:///etc/passwd"> & speakers' }), '&lt;img src="file:///etc/passwd"&gt; &amp; speakers')
+assert.equal(model.sinkLabel({ description: '<img src="https://example.com/pixel">' }).includes("<"), false)
+assert.equal(model.safeSinkText("x".repeat(200)).length, 160)
 
 console.log("Model tests passed")

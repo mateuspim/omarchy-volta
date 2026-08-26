@@ -49,10 +49,15 @@ QtObject {
   readonly property bool muted: available ? sink.audio.muted : false
   readonly property string sinkName: sink ? String(sink.name || "") : ""
   readonly property string sinkLabel: Model.sinkLabel(sink)
+  readonly property int sinkIndex: {
+    for (var i = 0; i < sinks.length; i++)
+      if (sinks[i] === sink || String(sinks[i].name || "") === sinkName) return i
+    return -1
+  }
   readonly property var sinkOptions: {
     var result = []
     for (var i = 0; i < sinks.length; i++)
-      result.push({ value: String(sinks[i].name || ""), label: Model.sinkLabel(sinks[i]) })
+      result.push({ value: String(i), label: Model.sinkLabel(sinks[i]) })
     return result
   }
 
@@ -131,13 +136,20 @@ QtObject {
     resolvePhysicalSink()
   }
 
+  function selectSinkIndex(index) {
+    var position = Number(index)
+    if (!isFinite(position) || position !== Math.floor(position) || position < 0 || position >= sinks.length) {
+      error = "The selected output disappeared. Refreshing devices…"
+      resolvePhysicalSink()
+      return
+    }
+    selectSink(String(sinks[position].name || ""))
+  }
+
   function cycleSink(delta) {
     if (sinks.length < 2) return
-    var current = -1
-    for (var i = 0; i < sinks.length; i++)
-      if (String(sinks[i].name || "") === sinkName) { current = i; break }
-    var next = (Math.max(0, current) + delta + sinks.length) % sinks.length
-    selectSink(String(sinks[next].name || ""))
+    var next = (Math.max(0, sinkIndex) + delta + sinks.length) % sinks.length
+    selectSinkIndex(next)
   }
 
   property PwObjectTracker tracker: PwObjectTracker { objects: root.sinks }

@@ -1,6 +1,7 @@
 .pragma library
 
 var MAX_VOLUME = 1.5
+var MAX_SINK_LABEL_LENGTH = 160
 
 function clamp(value, minimum, maximum) {
   var number = Number(value)
@@ -67,7 +68,20 @@ function balanceLabel(value) {
   return Math.round(Math.abs(b) * 100) + "% " + (b < 0 ? "left" : "right")
 }
 
+// PipeWire metadata is controlled by local clients and attached devices. The
+// shared Omarchy dropdown and bar tooltip use Text.AutoText, so escape markup
+// before labels reach QML and keep persistent-shell text reasonably bounded.
+function safeSinkText(value) {
+  var text = String(value === undefined || value === null ? "" : value)
+    .slice(0, MAX_SINK_LABEL_LENGTH)
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .slice(0, MAX_SINK_LABEL_LENGTH)
+}
+
 function sinkLabel(node) {
   if (!node) return "No output"
-  return String(node.description || node.nickname || node.name || "Output")
+  return safeSinkText(node.description || node.nickname || node.name || "Output")
 }

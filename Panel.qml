@@ -16,11 +16,7 @@ Panel {
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
   readonly property color danger: bar ? bar.urgent : Color.urgent
-  readonly property int sinkPosition: {
-    for (var i = 0; i < audio.sinks.length; i++)
-      if (String(audio.sinks[i].name || "") === audio.sinkName) return i + 1
-    return audio.sinks.length > 0 ? 1 : 0
-  }
+  readonly property int sinkPosition: audio.sinkIndex >= 0 ? audio.sinkIndex + 1 : (audio.sinks.length > 0 ? 1 : 0)
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
@@ -169,12 +165,12 @@ Panel {
               id: sinkPicker
               width: parent.width - parent.spacing * 2 - Style.space(44)
               showLabel: false
-              value: audio.sinkName
+              value: audio.sinkIndex >= 0 ? String(audio.sinkIndex) : ""
               options: audio.sinkOptions
               hasCursor: root.keyboardRow === 0
               foreground: root.foreground
               fontFamily: bar ? bar.fontFamily : Style.font.family
-              onChanged: function(value) { audio.selectSink(value) }
+              onChanged: function(value) { audio.selectSinkIndex(value) }
             }
             PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
