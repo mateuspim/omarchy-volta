@@ -57,8 +57,19 @@ Panel {
     if (sinkPicker.popupOpen) return
     if (event.key === Qt.Key_Escape || event.text === "q") { root.close(); event.accepted = true; return }
     if (event.key === Qt.Key_Tab) { audio.cycleSink((event.modifiers & Qt.ShiftModifier) ? -1 : 1); event.accepted = true; return }
-    if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Left) { audio.cycleSink(-1); event.accepted = true; return }
-    if (event.key === Qt.Key_Right) { audio.cycleSink(1); event.accepted = true; return }
+    if (event.key === Qt.Key_Backtab) { audio.cycleSink(-1); event.accepted = true; return }
+    if (event.key === Qt.Key_Left) {
+      if (keyboardRow === 0) audio.cycleSink(-1)
+      else adjust(keyboardRow, -0.05)
+      event.accepted = true
+      return
+    }
+    if (event.key === Qt.Key_Right) {
+      if (keyboardRow === 0) audio.cycleSink(1)
+      else adjust(keyboardRow, 0.05)
+      event.accepted = true
+      return
+    }
     if (event.key === Qt.Key_Up) { keyboardRow = Math.max(0, keyboardRow - 1); event.accepted = true; return }
     if (event.key === Qt.Key_Down) { keyboardRow = Math.min(6, keyboardRow + 1); event.accepted = true; return }
     if (event.text === "k") { audio.mono ? audio.setVolume(audio.volume + 0.05) : audio.setLeft(audio.left + 0.05); event.accepted = true; return }
@@ -75,6 +86,7 @@ Panel {
       else if (keyboardRow === 4) audio.toggleLock()
       else if (keyboardRow === 5) audio.toggleMute()
       else if (keyboardRow === 6) audio.reset()
+      else { event.accepted = false; return }
       event.accepted = true
     }
   }
@@ -97,6 +109,8 @@ Panel {
       VoltaMark { tint: button.active ? button.activeColor : button.foreground }
     }
     active: root.opened || audio.muted || Math.abs(audio.balance) >= 0.12
+    Accessible.role: Accessible.Button
+    Accessible.name: "Volta audio controls"
     tooltipText: audio.available
       ? audio.sinkLabel + (audio.mono
           ? "\nVolume " + Model.percent(audio.volume)
@@ -117,12 +131,13 @@ Panel {
     }
   }
 
-  PopupCard {
+  KeyboardPanel {
     id: popup
     anchorItem: button
     owner: root
     bar: root.bar
     open: root.opened
+    focusTarget: keySurface
     contentWidth: fittedContentWidth(400)
     contentHeight: fittedContentHeight(content.implicitHeight)
 
@@ -186,6 +201,8 @@ Panel {
               foreground: root.foreground
               fontFamily: bar ? bar.fontFamily : Style.font.family
               onChanged: function(value) { audio.selectSinkId(value) }
+              Accessible.role: Accessible.ComboBox
+              Accessible.name: "Output sink"
             }
             PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
@@ -202,22 +219,26 @@ Panel {
         }
 
         Column {
+          id: balanceSection
           width: parent.width
           spacing: Style.spacing.xs
+          Accessible.role: Accessible.Slider
+          Accessible.name: "Stereo balance"
+          Accessible.description: Model.balanceLabel(audio.balance)
           Row {
             width: parent.width
-            Text { text: "BALANCE  ·  H / L"; color: root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
+            Text { text: "BALANCE  ·  H / L"; color: root.keyboardRow === 3 ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
             Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.balanceLabel(audio.balance); color: Math.abs(audio.balance) < 0.005 ? Color.accent : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
           }
-          PanelSlider { width: parent.width; value: audio.balance; minimum: -1; maximum: 1; step: 0.05; tickCount: 3; enabled: audio.stereoSupported; onMoved: function(value) { audio.setBalance(value) } }
+          PanelSlider { width: parent.width; value: audio.balance; minimum: -1; maximum: 1; step: 0.05; tickCount: 3; enabled: audio.stereoSupported; fillColor: root.keyboardRow === 3 ? Color.accent : root.foreground; knobColor: fillColor; onMoved: function(value) { audio.setBalance(value) } }
         }
 
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; enabled: audio.stereoSupported; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.muted ? "Unmute" : "Mute") + "  M"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset  R"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; enabled: audio.stereoSupported; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.channelsLocked ? "Unlink channels" : "Link channels"; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.muted ? "Unmute" : "Mute") + "  M"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.muted ? "Unmute output" : "Mute output"; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset  R"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; Accessible.role: Accessible.Button; Accessible.name: "Reset output volume"; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
       }
     }
@@ -229,6 +250,9 @@ Panel {
     property real value: 0
     property bool selected: false
     signal moved(real value)
+    Accessible.role: Accessible.Slider
+    Accessible.name: label.replace(/\s*·.*$/, "")
+    Accessible.description: Model.percent(value)
     spacing: Style.spacing.xs
     opacity: enabled ? 1 : 0.45
     Row {

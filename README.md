@@ -43,6 +43,8 @@ In the popup:
 
 For compositor bindings, actions are also available through `omarchy-shell pym.volta-control`: `mute`, `reset`, `lock`, `leftUp`, `leftDown`, `rightUp`, `rightDown`, `balanceLeft`, `balanceRight`, `previousSink`, and `nextSink`.
 
+Volta does not install global compositor bindings. Add explicit Hyprland bindings for any of those IPC actions you want available while the popup is closed.
+
 ## Requirements
 
 - Omarchy 4.0+ with the Quickshell-based `omarchy-shell`
