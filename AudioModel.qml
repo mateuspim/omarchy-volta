@@ -123,10 +123,9 @@ QtObject {
     resolvePhysicalSink()
   }
 
-  PwObjectTracker { objects: root.sinks }
+  property PwObjectTracker tracker: PwObjectTracker { objects: root.sinks }
 
-  Process {
-    id: resolver
+  property Process resolver: Process {
     command: ["omarchy-audio-output-sink"]
     stdout: StdioCollector {
       waitForEnd: true
@@ -144,17 +143,15 @@ QtObject {
     }
   }
 
-  Timer { id: resolveTimer; interval: 250; onTriggered: root.resolvePhysicalSink() }
-  Timer {
-    id: refreshTimer
+  property Timer resolveTimer: Timer { interval: 250; onTriggered: root.resolvePhysicalSink() }
+  property Timer refreshTimer: Timer {
     interval: 15000
     repeat: true
     running: true
     triggeredOnStart: true
     onTriggered: root.resolvePhysicalSink()
   }
-  Timer {
-    id: verifyTimer
+  property Timer verifyTimer: Timer {
     interval: 800
     onTriggered: {
       root.writePending = false
