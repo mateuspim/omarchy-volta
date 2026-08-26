@@ -16,12 +16,16 @@ QtObject {
   property int resolverRequestedGeneration: 0
   property int resolverRunningGeneration: 0
   property bool resolverPending: false
-  property string error: ""
+  property string resolverError: ""
+  property string controlError: ""
+  property string verificationError: ""
+  readonly property string error: controlError !== "" ? controlError : (verificationError !== "" ? verificationError : resolverError)
   property bool channelsLocked: false
   property bool writePending: false
   property real expectedLeft: 0
   property real expectedRight: 0
   property real expectedVolume: 0
+  property string expectedSinkId: ""
 
   readonly property var candidateSinks: {
     var result = []
@@ -65,6 +69,7 @@ QtObject {
   readonly property real balance: Model.balance(left, right)
   readonly property bool muted: available ? sink.audio.muted : false
   readonly property string sinkName: sink ? String(sink.name || "") : ""
+  readonly property string effectiveSinkId: sink && sink.id !== undefined ? String(sink.id) : sinkName
   readonly property string sinkId: defaultSink && defaultSink.id !== undefined ? String(defaultSink.id) : ""
   readonly property string sinkLabel: Model.sinkLabel(sink)
   readonly property int sinkIndex: {
@@ -80,7 +85,13 @@ QtObject {
     return result
   }
 
-  onSinkChanged: channelsLocked = false
+  onSinkChanged: {
+    channelsLocked = false
+    verifyTimer.stop()
+    writePending = false
+    controlError = ""
+    verificationError = ""
+  }
   onDefaultSinkChanged: {
     resolvePhysicalSink()
     refreshAvailability()
@@ -111,10 +122,10 @@ QtObject {
   }
 
   function validateWritable() {
-    if (!available) { error = "No output sink is available."; return false }
+    if (!available) { controlError = "No output sink is available."; return false }
     if (!stereoSupported) {
-      error = mono ? "This output is mono; independent L/R control is unavailable."
-                   : "This output has no front-left/front-right channel map."
+      controlError = mono ? "This output is mono; independent L/R control is unavailable."
+                          : "This output has no front-left/front-right channel map."
       return false
     }
     return true
@@ -123,10 +134,12 @@ QtObject {
   function write(leftValue, rightValue) {
     if (!validateWritable()) return false
     var next = Model.withStereoVolumes(sink.audio.volumes, stereo.leftIndex, stereo.rightIndex, leftValue, rightValue)
-    error = ""
+    controlError = ""
+    verificationError = ""
     writePending = true
     expectedLeft = Model.clampVolume(leftValue)
     expectedRight = Model.clampVolume(rightValue)
+    expectedSinkId = effectiveSinkId
     sink.audio.volumes = next
     verifyTimer.restart()
     return true
@@ -149,11 +162,13 @@ QtObject {
   function shiftBalance(delta) { setBalance(balance + delta) }
 
   function setVolume(value) {
-    if (!available) { error = "No output sink is available."; return }
+    if (!available) { controlError = "No output sink is available."; return }
     var next = Model.clampVolume(value)
-    error = ""
+    controlError = ""
+    verificationError = ""
     writePending = true
     expectedVolume = next
+    expectedSinkId = effectiveSinkId
     sink.audio.volume = next
     verifyTimer.restart()
   }
@@ -171,8 +186,8 @@ QtObject {
     }
   }
   function toggleMute() {
-    if (!available) { error = "No output sink is available."; return }
-    error = ""
+    if (!available) { controlError = "No output sink is available."; return }
+    controlError = ""
     sink.audio.muted = !sink.audio.muted
   }
   function reset() {
@@ -185,14 +200,14 @@ QtObject {
     for (var i = 0; i < sinks.length; i++) {
       var node = sinks[i]
       if (String(node.name || "") !== String(name)) continue
-      error = ""
+      controlError = ""
       Pipewire.preferredDefaultAudioSink = node
       if (node.id !== undefined && node.name)
         Quickshell.execDetached(["omarchy-audio-output-set-default", String(node.id), String(node.name)])
       resolveTimer.restart()
       return
     }
-    error = "The selected output disappeared. Refreshing devices…"
+    controlError = "The selected output disappeared. Refreshing devices…"
     resolvePhysicalSink()
   }
 
@@ -203,7 +218,7 @@ QtObject {
         return
       }
     }
-    error = "The selected output disappeared. Refreshing devices…"
+    controlError = "The selected output disappeared. Refreshing devices…"
     resolvePhysicalSink()
   }
 
@@ -243,11 +258,10 @@ QtObject {
       if (root.resolverRunningGeneration === root.resolverRequestedGeneration) {
         if (exitCode === 0) {
           root.resolvedSinkName = output
-          if (!root.available) root.error = "No output sink is available."
-          else if (root.error === "No output sink is available.") root.error = ""
+          root.resolverError = root.available ? "" : "No output sink is available."
         } else {
           root.resolvedSinkName = ""
-          root.error = "Could not resolve the physical output; using the PipeWire default."
+          root.resolverError = "Could not resolve the physical output; using the PipeWire default."
         }
       }
       if (root.resolverPending || root.resolverRunningGeneration < root.resolverRequestedGeneration)
@@ -275,11 +289,16 @@ QtObject {
     interval: 800
     onTriggered: {
       root.writePending = false
-      if (!root.available) root.error = "The output disappeared while changing volume."
+      if (root.effectiveSinkId !== root.expectedSinkId) {
+        root.verificationError = ""
+        return
+      }
+      if (!root.available) root.verificationError = "The output disappeared while changing volume."
       else if (root.mono && Math.abs(root.volume - root.expectedVolume) > 0.015)
-        root.error = "PipeWire did not keep the requested volume; another audio policy may be overriding it."
+        root.verificationError = "PipeWire did not keep the requested volume; another audio policy may be overriding it."
       else if (!root.mono && (Math.abs(root.left - root.expectedLeft) > 0.015 || Math.abs(root.right - root.expectedRight) > 0.015))
-        root.error = "PipeWire did not keep the requested channel levels; another audio policy may be overriding them."
+        root.verificationError = "PipeWire did not keep the requested channel levels; another audio policy may be overriding them."
+      else root.verificationError = ""
     }
   }
 }
