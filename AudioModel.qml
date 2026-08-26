@@ -80,6 +80,7 @@ QtObject {
     return result
   }
 
+  onSinkChanged: channelsLocked = false
   onDefaultSinkChanged: {
     resolvePhysicalSink()
     refreshAvailability()
@@ -120,7 +121,7 @@ QtObject {
   }
 
   function write(leftValue, rightValue) {
-    if (!validateWritable()) return
+    if (!validateWritable()) return false
     var next = Model.withStereoVolumes(sink.audio.volumes, stereo.leftIndex, stereo.rightIndex, leftValue, rightValue)
     error = ""
     writePending = true
@@ -128,6 +129,7 @@ QtObject {
     expectedRight = Model.clampVolume(rightValue)
     sink.audio.volumes = next
     verifyTimer.restart()
+    return true
   }
 
   function setLeft(value) {
@@ -163,8 +165,7 @@ QtObject {
   function toggleLock() {
     if (!channelsLocked) {
       var average = (left + right) / 2
-      write(average, average)
-      channelsLocked = true
+      if (write(average, average)) channelsLocked = true
     } else {
       channelsLocked = false
     }

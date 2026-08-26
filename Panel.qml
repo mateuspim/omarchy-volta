@@ -215,7 +215,7 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; enabled: audio.stereoSupported; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.muted ? "Unmute" : "Mute") + "  M"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset  R"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
