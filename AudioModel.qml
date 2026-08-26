@@ -11,7 +11,7 @@ QtObject {
   property var nodes: Pipewire.nodes ? Pipewire.nodes.values : []
   property string resolvedSinkName: ""
   property string error: ""
-  property bool channelsLocked: true
+  property bool channelsLocked: false
   property bool writePending: false
   property real expectedLeft: 0
   property real expectedRight: 0
@@ -85,28 +85,36 @@ QtObject {
 
   function setLeft(value) {
     var next = Model.clampVolume(value)
-    var delta = next - left
-    write(next, channelsLocked ? right + delta : right)
+    write(next, channelsLocked ? next : right)
   }
 
   function setRight(value) {
     var next = Model.clampVolume(value)
-    var delta = next - right
-    write(channelsLocked ? left + delta : left, next)
+    write(channelsLocked ? next : left, next)
   }
 
   function setBalance(value) {
     var pair = Model.applyBalance(left, right, value)
     write(pair.left, pair.right)
   }
+  function shiftBalance(delta) { write(left - delta, right + delta) }
 
   function adjustBoth(delta) { write(left + delta, right + delta) }
+  function toggleLock() {
+    if (!channelsLocked) {
+      var average = (left + right) / 2
+      write(average, average)
+      channelsLocked = true
+    } else {
+      channelsLocked = false
+    }
+  }
   function toggleMute() {
     if (!available) { error = "No output sink is available."; return }
     error = ""
     sink.audio.muted = !sink.audio.muted
   }
-  function reset() { write(1, 1) }
+  function reset() { channelsLocked = false; write(1, 1) }
 
   function selectSink(name) {
     for (var i = 0; i < sinks.length; i++) {
@@ -121,6 +129,15 @@ QtObject {
     }
     error = "The selected output disappeared. Refreshing devices…"
     resolvePhysicalSink()
+  }
+
+  function cycleSink(delta) {
+    if (sinks.length < 2) return
+    var current = -1
+    for (var i = 0; i < sinks.length; i++)
+      if (String(sinks[i].name || "") === sinkName) { current = i; break }
+    var next = (Math.max(0, current) + delta + sinks.length) % sinks.length
+    selectSink(String(sinks[next].name || ""))
   }
 
   property PwObjectTracker tracker: PwObjectTracker { objects: root.sinks }

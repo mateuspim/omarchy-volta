@@ -31,9 +31,9 @@ omarchy plugin remove pym.volta
 - Wheel over the bar icon changes both channels by 5%.
 - The popup provides L/R sliders, balance, linked/independent mode, mute, reset, and output selection.
 - Values above 100% (up to 150%) use the urgent theme color as an over-gain warning.
-- Keyboard: Up/Down or J/K selects a control; Left/Right or H/L adjusts it. M toggles mute, C toggles channel linking, R resets, and Escape closes.
+- The original TUI controls are preserved: J/K changes the left channel by 5%, Shift+J/K changes the right, H/L shifts balance by 3%, Left/Right or Tab/Shift+Tab cycles outputs, L locks channels at equal volume, M toggles mute, R resets and unlocks, and Q closes. Up/Down remains available for visual control navigation.
 
-Channel linking preserves the current difference while moving either L/R slider. Balance preserves the louder channel and attenuates the other side.
+Locking averages the current channels and keeps L equal to R while either slider moves. Dragging the balance control preserves the louder channel and attenuates the other side.
 
 ## Backend decision
 
