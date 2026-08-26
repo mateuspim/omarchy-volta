@@ -48,6 +48,7 @@ QtObject {
   readonly property real balance: Model.balance(left, right)
   readonly property bool muted: available ? sink.audio.muted : false
   readonly property string sinkName: sink ? String(sink.name || "") : ""
+  readonly property string sinkId: sink && sink.id !== undefined ? String(sink.id) : ""
   readonly property string sinkLabel: Model.sinkLabel(sink)
   readonly property int sinkIndex: {
     for (var i = 0; i < sinks.length; i++)
@@ -57,7 +58,8 @@ QtObject {
   readonly property var sinkOptions: {
     var result = []
     for (var i = 0; i < sinks.length; i++)
-      result.push({ value: String(i), label: Model.sinkLabel(sinks[i]) })
+      if (sinks[i].id !== undefined)
+        result.push({ value: String(sinks[i].id), label: Model.sinkLabel(sinks[i]) })
     return result
   }
 
@@ -136,20 +138,21 @@ QtObject {
     resolvePhysicalSink()
   }
 
-  function selectSinkIndex(index) {
-    var position = Number(index)
-    if (!isFinite(position) || position !== Math.floor(position) || position < 0 || position >= sinks.length) {
-      error = "The selected output disappeared. Refreshing devices…"
-      resolvePhysicalSink()
-      return
+  function selectSinkId(id) {
+    for (var i = 0; i < sinks.length; i++) {
+      if (sinks[i].id !== undefined && String(sinks[i].id) === String(id)) {
+        selectSink(String(sinks[i].name || ""))
+        return
+      }
     }
-    selectSink(String(sinks[position].name || ""))
+    error = "The selected output disappeared. Refreshing devices…"
+    resolvePhysicalSink()
   }
 
   function cycleSink(delta) {
     if (sinks.length < 2) return
     var next = (Math.max(0, sinkIndex) + delta + sinks.length) % sinks.length
-    selectSinkIndex(next)
+    if (sinks[next].id !== undefined) selectSinkId(sinks[next].id)
   }
 
   property PwObjectTracker tracker: PwObjectTracker { objects: root.sinks }

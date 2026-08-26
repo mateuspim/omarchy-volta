@@ -13,6 +13,7 @@ Panel {
 
   property int keyboardRow: 0
   property real wheelAccumulator: 0
+  property var displaySinkOptions: []
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
   readonly property color danger: bar ? bar.urgent : Color.urgent
@@ -21,7 +22,20 @@ Panel {
   implicitHeight: button.implicitHeight
 
   onOpenedChanged: {
-    if (opened) Qt.callLater(function() { keySurface.forceActiveFocus() })
+    if (opened) {
+      refreshSinkOptions()
+      Qt.callLater(function() { keySurface.forceActiveFocus() })
+    } else {
+      sinkOptionsTimer.stop()
+      displaySinkOptions = []
+    }
+  }
+
+  function scheduleSinkOptionsRefresh() {
+    if (opened) sinkOptionsTimer.restart()
+  }
+  function refreshSinkOptions() {
+    if (opened) displaySinkOptions = audio.sinkOptions.slice()
   }
 
   function icon() {
@@ -63,6 +77,17 @@ Panel {
   }
 
   AudioModel { id: audio }
+
+  Connections {
+    target: audio
+    function onSinkOptionsChanged() { root.scheduleSinkOptionsRefresh() }
+  }
+
+  Timer {
+    id: sinkOptionsTimer
+    interval: 75
+    onTriggered: root.refreshSinkOptions()
+  }
 
   IpcHandler {
     target: "pym.volta-control"
@@ -165,12 +190,12 @@ Panel {
               id: sinkPicker
               width: parent.width - parent.spacing * 2 - Style.space(44)
               showLabel: false
-              value: audio.sinkIndex >= 0 ? String(audio.sinkIndex) : ""
-              options: audio.sinkOptions
+              value: audio.sinkId
+              options: root.displaySinkOptions
               hasCursor: root.keyboardRow === 0
               foreground: root.foreground
               fontFamily: bar ? bar.fontFamily : Style.font.family
-              onChanged: function(value) { audio.selectSinkIndex(value) }
+              onChanged: function(value) { audio.selectSinkId(value) }
             }
             PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
