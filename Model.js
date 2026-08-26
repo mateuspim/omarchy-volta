@@ -56,7 +56,7 @@ function balance(left, right) {
 
 function applyBalance(left, right, value) {
   var peak = Math.max(clampVolume(left), clampVolume(right))
-  if (peak <= 0) peak = 1
+  if (peak <= 0) return { left: 0, right: 0 }
   var b = clamp(value, -1, 1)
   return b < 0 ? { left: peak, right: peak * (1 + b) }
                : { left: peak * (1 - b), right: peak }

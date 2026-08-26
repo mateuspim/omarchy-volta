@@ -102,7 +102,7 @@ QtObject {
     var pair = Model.applyBalance(left, right, value)
     write(pair.left, pair.right)
   }
-  function shiftBalance(delta) { write(left - delta, right + delta) }
+  function shiftBalance(delta) { setBalance(balance + delta) }
 
   function adjustBoth(delta) { write(left + delta, right + delta) }
   function toggleLock() {
