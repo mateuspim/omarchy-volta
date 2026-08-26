@@ -4,6 +4,7 @@
   "name": "Volta",
   "version": "0.1.0",
   "author": "Mateus Pym",
+  "license": "MIT",
   "description": "Per-channel volume and stereo balance controls for Omarchy",
   "kinds": [
     "bar-widget"

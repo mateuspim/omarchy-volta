@@ -4,6 +4,8 @@ Volta is a focused Omarchy shell plugin for independent left/right output volume
 
 The bar mark is adapted from the original [Volta logo](https://github.com/mateuspim/volta/blob/master/assets/logo.png), simplified for legibility at status-bar size and colorized to the active Omarchy theme.
 
+![Volta popup showing independent left and right volume, balance, output selection, and linked-channel controls](preview.png)
+
 ## Requirements
 
 - Omarchy 4.0+
