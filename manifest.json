@@ -16,6 +16,8 @@
     "description": "Per-channel volume and stereo balance controls",
     "category": "Audio",
     "allowMultiple": false,
-    "defaultSection": "right"
+    "defaultSection": "right",
+    "defaults": {},
+    "schema": []
   }
 }
