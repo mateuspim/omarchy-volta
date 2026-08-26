@@ -85,7 +85,6 @@ function safeSinkText(value) {
   var text = String(value === undefined || value === null ? "" : value)
     .slice(0, MAX_SINK_LABEL_LENGTH)
   return text
-    .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .slice(0, MAX_SINK_LABEL_LENGTH)
