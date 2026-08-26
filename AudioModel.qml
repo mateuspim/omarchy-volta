@@ -9,14 +9,17 @@ QtObject {
 
   property var defaultSink: Pipewire.defaultAudioSink
   property var nodes: Pipewire.nodes ? Pipewire.nodes.values : []
+  property bool optionsActive: false
   property string resolvedSinkName: ""
+  property var sinkAvailability: ({})
+  property bool sinkAvailabilityLoaded: false
   property string error: ""
   property bool channelsLocked: false
   property bool writePending: false
   property real expectedLeft: 0
   property real expectedRight: 0
 
-  readonly property var sinks: {
+  readonly property var candidateSinks: {
     var result = []
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i]
@@ -26,10 +29,19 @@ QtObject {
     return result
   }
 
+  readonly property var sinks: {
+    var result = []
+    for (var i = 0; i < candidateSinks.length; i++) {
+      var node = candidateSinks[i]
+      if (node === defaultSink || sinkAvailable(node)) result.push(node)
+    }
+    return result
+  }
+
   readonly property var sink: {
     if (!defaultSink || resolvedSinkName === "" || String(defaultSink.name) === resolvedSinkName) return defaultSink
-    for (var i = 0; i < sinks.length; i++)
-      if (String(sinks[i].name) === resolvedSinkName && sinks[i].audio) return sinks[i]
+    for (var i = 0; i < candidateSinks.length; i++)
+      if (String(candidateSinks[i].name) === resolvedSinkName && candidateSinks[i].audio) return candidateSinks[i]
     return defaultSink
   }
   readonly property bool available: !!(sink && sink.audio)
@@ -48,11 +60,11 @@ QtObject {
   readonly property real balance: Model.balance(left, right)
   readonly property bool muted: available ? sink.audio.muted : false
   readonly property string sinkName: sink ? String(sink.name || "") : ""
-  readonly property string sinkId: sink && sink.id !== undefined ? String(sink.id) : ""
+  readonly property string sinkId: defaultSink && defaultSink.id !== undefined ? String(defaultSink.id) : ""
   readonly property string sinkLabel: Model.sinkLabel(sink)
   readonly property int sinkIndex: {
     for (var i = 0; i < sinks.length; i++)
-      if (sinks[i] === sink || String(sinks[i].name || "") === sinkName) return i
+      if (sinks[i] === defaultSink || String(sinks[i].name || "") === String(defaultSink ? defaultSink.name || "" : "")) return i
     return -1
   }
   readonly property var sinkOptions: {
@@ -63,7 +75,19 @@ QtObject {
     return result
   }
 
-  onDefaultSinkChanged: resolvePhysicalSink()
+  onDefaultSinkChanged: {
+    resolvePhysicalSink()
+    refreshAvailability()
+  }
+
+  function sinkAvailable(node) {
+    if (!node || !node.name || !sinkAvailabilityLoaded) return true
+    return sinkAvailability[String(node.name)] !== false
+  }
+
+  function refreshAvailability() {
+    if (!availabilityProc.running) availabilityProc.running = true
+  }
 
   function resolvePhysicalSink() {
     if (!resolver.running) resolver.running = true
@@ -155,7 +179,23 @@ QtObject {
     if (sinks[next].id !== undefined) selectSinkId(sinks[next].id)
   }
 
-  property PwObjectTracker tracker: PwObjectTracker { objects: root.sinks }
+  property PwObjectTracker tracker: PwObjectTracker { objects: root.candidateSinks }
+
+  property Process availabilityProc: Process {
+    property string output: ""
+    command: ["omarchy-audio-sink-availability"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: availabilityProc.output = String(text)
+    }
+    onStarted: output = ""
+    onExited: function(exitCode) {
+      if (exitCode === 0) {
+        root.sinkAvailability = Model.parseSinkAvailability(output)
+        root.sinkAvailabilityLoaded = true
+      }
+    }
+  }
 
   property Process resolver: Process {
     command: ["omarchy-audio-output-sink"]
@@ -182,6 +222,13 @@ QtObject {
     running: true
     triggeredOnStart: true
     onTriggered: root.resolvePhysicalSink()
+  }
+  property Timer availabilityTimer: Timer {
+    interval: 5000
+    repeat: true
+    running: root.optionsActive
+    triggeredOnStart: true
+    onTriggered: root.refreshAvailability()
   }
   property Timer verifyTimer: Timer {
     interval: 800

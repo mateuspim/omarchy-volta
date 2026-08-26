@@ -5,11 +5,12 @@ import vm from "node:vm"
 const source = fs.readFileSync(new URL("../Model.js", import.meta.url), "utf8")
   .replace(/^\.pragma library\s*/m, "")
 const model = {}
-vm.runInNewContext(source + "\nObject.assign(model, { clamp, clampVolume, percent, channelName, stereoIndices, readStereo, withStereoVolumes, balance, applyBalance, balanceLabel, safeSinkText, sinkLabel });", { model, isFinite })
+vm.runInNewContext(source + "\nObject.assign(model, { clamp, clampVolume, percent, channelName, parseSinkAvailability, stereoIndices, readStereo, withStereoVolumes, balance, applyBalance, balanceLabel, safeSinkText, sinkLabel });", { model, isFinite })
 
 assert.equal(model.clampVolume(-1), 0)
 assert.equal(model.clampVolume(2), 1.5)
 assert.equal(model.percent(1.234), "123%")
+assert.deepEqual({ ...model.parseSinkAvailability("sink.a\t1\nsink.b\t0\n") }, { "sink.a": true, "sink.b": false })
 
 const fixture = name => JSON.parse(fs.readFileSync(new URL(`fixtures/${name}.json`, import.meta.url), "utf8"))
 const stereoFixture = fixture("stereo")

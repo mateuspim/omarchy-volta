@@ -76,7 +76,7 @@ Panel {
     }
   }
 
-  AudioModel { id: audio }
+  AudioModel { id: audio; optionsActive: root.opened }
 
   Connections {
     target: audio

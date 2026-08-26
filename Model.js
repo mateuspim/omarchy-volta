@@ -19,6 +19,16 @@ function channelName(channel) {
   return (dot >= 0 ? name.slice(dot + 1) : name).toLowerCase().replace(/[^a-z]/g, "")
 }
 
+function parseSinkAvailability(raw) {
+  var result = {}
+  var lines = String(raw || "").split("\n")
+  for (var i = 0; i < lines.length; i++) {
+    var parts = lines[i].trim().split("\t")
+    if (parts.length >= 2 && parts[0]) result[parts[0]] = parts[1] !== "0"
+  }
+  return result
+}
+
 function stereoIndices(channels) {
   var result = { left: -1, right: -1, mono: -1 }
   for (var i = 0; i < (channels || []).length; i++) {
