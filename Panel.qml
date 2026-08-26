@@ -46,8 +46,10 @@ Panel {
     return Math.max(audio.left, audio.right) > 1 ? "󱄠" : "󰕾"
   }
   function adjust(row, delta) {
-    if (row === 1) audio.setLeft(audio.left + delta)
-    else if (row === 2) audio.setRight(audio.right + delta)
+    if (row === 1) {
+      if (audio.mono) audio.setVolume(audio.volume + delta)
+      else audio.setLeft(audio.left + delta)
+    } else if (row === 2) audio.setRight(audio.right + delta)
     else if (row === 3) audio.setBalance(audio.balance + delta * 4)
   }
   function handleKey(event) {
@@ -58,10 +60,10 @@ Panel {
     if (event.key === Qt.Key_Right) { audio.cycleSink(1); event.accepted = true; return }
     if (event.key === Qt.Key_Up) { keyboardRow = Math.max(0, keyboardRow - 1); event.accepted = true; return }
     if (event.key === Qt.Key_Down) { keyboardRow = Math.min(6, keyboardRow + 1); event.accepted = true; return }
-    if (event.text === "k") { audio.setLeft(audio.left + 0.05); event.accepted = true; return }
-    if (event.text === "j") { audio.setLeft(audio.left - 0.05); event.accepted = true; return }
-    if (event.text === "K") { audio.setRight(audio.right + 0.05); event.accepted = true; return }
-    if (event.text === "J") { audio.setRight(audio.right - 0.05); event.accepted = true; return }
+    if (event.text === "k") { audio.mono ? audio.setVolume(audio.volume + 0.05) : audio.setLeft(audio.left + 0.05); event.accepted = true; return }
+    if (event.text === "j") { audio.mono ? audio.setVolume(audio.volume - 0.05) : audio.setLeft(audio.left - 0.05); event.accepted = true; return }
+    if (event.text === "K") { audio.mono ? audio.setVolume(audio.volume + 0.05) : audio.setRight(audio.right + 0.05); event.accepted = true; return }
+    if (event.text === "J") { audio.mono ? audio.setVolume(audio.volume - 0.05) : audio.setRight(audio.right - 0.05); event.accepted = true; return }
     if (event.key === Qt.Key_L && (event.modifiers & Qt.ShiftModifier)) { audio.toggleLock(); event.accepted = true; return }
     if (event.text === "h") { audio.shiftBalance(-0.03); event.accepted = true; return }
     if (event.text === "l") { audio.shiftBalance(0.03); event.accepted = true; return }
@@ -112,7 +114,9 @@ Panel {
     }
     active: root.opened || audio.muted || Math.abs(audio.balance) >= 0.12
     tooltipText: audio.available
-      ? audio.sinkLabel + "\nL " + Model.percent(audio.left) + "  R " + Model.percent(audio.right) + " · " + Model.balanceLabel(audio.balance)
+      ? audio.sinkLabel + (audio.mono
+          ? "\nVolume " + Model.percent(audio.volume)
+          : "\nL " + Model.percent(audio.left) + "  R " + Model.percent(audio.right) + " · " + Model.balanceLabel(audio.balance))
       : "Volta · No output"
     onPressed: function(mouseButton) {
       if (mouseButton === Qt.LeftButton) root.toggle()
@@ -153,7 +157,9 @@ Panel {
         PanelHero {
           width: parent.width
           title: "Volta"
-          meta: audio.available ? Model.percent(audio.left) + " left  ·  " + Model.percent(audio.right) + " right" : "No output available"
+          meta: audio.available
+            ? (audio.mono ? Model.percent(audio.volume) + " volume" : Model.percent(audio.left) + " left  ·  " + Model.percent(audio.right) + " right")
+            : "No output available"
           detail: audio.muted ? "Muted" : (audio.channelsLocked ? "Linked" : Model.balanceLabel(audio.balance))
           foreground: root.foreground
           fontFamily: bar ? bar.fontFamily : Style.font.family
@@ -206,8 +212,9 @@ Panel {
           width: parent.width
           spacing: Style.spacing.sm
           PanelSectionHeader { text: "CHANNELS"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
-          ChannelSlider { width: parent.width; label: "LEFT  ·  J / K"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
-          ChannelSlider { width: parent.width; label: "RIGHT  ·  ⇧J / ⇧K"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
+          ChannelSlider { visible: audio.mono; width: parent.width; label: "VOLUME  ·  J / K"; value: audio.volume; enabled: audio.available; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setVolume(value) } }
+          ChannelSlider { visible: !audio.mono; width: parent.width; label: "LEFT  ·  J / K"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
+          ChannelSlider { visible: !audio.mono; width: parent.width; label: "RIGHT  ·  ⇧J / ⇧K"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
         }
 
         Column {

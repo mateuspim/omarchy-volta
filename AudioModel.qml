@@ -21,6 +21,7 @@ QtObject {
   property bool writePending: false
   property real expectedLeft: 0
   property real expectedRight: 0
+  property real expectedVolume: 0
 
   readonly property var candidateSinks: {
     var result = []
@@ -60,6 +61,7 @@ QtObject {
   readonly property bool mono: available && stereo.mono
   readonly property real left: stereo.left
   readonly property real right: stereo.right
+  readonly property real volume: available ? Model.clampVolume(sink.audio.volume) : 0
   readonly property real balance: Model.balance(left, right)
   readonly property bool muted: available ? sink.audio.muted : false
   readonly property string sinkName: sink ? String(sink.name || "") : ""
@@ -144,7 +146,20 @@ QtObject {
   }
   function shiftBalance(delta) { setBalance(balance + delta) }
 
-  function adjustBoth(delta) { write(left + delta, right + delta) }
+  function setVolume(value) {
+    if (!available) { error = "No output sink is available."; return }
+    var next = Model.clampVolume(value)
+    error = ""
+    writePending = true
+    expectedVolume = next
+    sink.audio.volume = next
+    verifyTimer.restart()
+  }
+
+  function adjustBoth(delta) {
+    if (mono) setVolume(volume + delta)
+    else write(left + delta, right + delta)
+  }
   function toggleLock() {
     if (!channelsLocked) {
       var average = (left + right) / 2
@@ -159,7 +174,11 @@ QtObject {
     error = ""
     sink.audio.muted = !sink.audio.muted
   }
-  function reset() { channelsLocked = false; write(1, 1) }
+  function reset() {
+    channelsLocked = false
+    if (mono) setVolume(1)
+    else write(1, 1)
+  }
 
   function selectSink(name) {
     for (var i = 0; i < sinks.length; i++) {
@@ -256,7 +275,9 @@ QtObject {
     onTriggered: {
       root.writePending = false
       if (!root.available) root.error = "The output disappeared while changing volume."
-      else if (Math.abs(root.left - root.expectedLeft) > 0.015 || Math.abs(root.right - root.expectedRight) > 0.015)
+      else if (root.mono && Math.abs(root.volume - root.expectedVolume) > 0.015)
+        root.error = "PipeWire did not keep the requested volume; another audio policy may be overriding it."
+      else if (!root.mono && (Math.abs(root.left - root.expectedLeft) > 0.015 || Math.abs(root.right - root.expectedRight) > 0.015))
         root.error = "PipeWire did not keep the requested channel levels; another audio policy may be overriding them."
     }
   }
