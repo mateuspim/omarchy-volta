@@ -87,24 +87,7 @@ Panel {
     id: button
     bar: root.bar
     iconComponent: Component {
-      Item {
-        Image {
-          id: voltaMark
-          anchors.fill: parent
-          source: "assets/volta-bar-icon.png"
-          fillMode: Image.PreserveAspectFit
-          sourceSize.width: Math.round(width * 4)
-          sourceSize.height: Math.round(height * 4)
-          visible: false
-          layer.enabled: true
-        }
-        MultiEffect {
-          anchors.fill: voltaMark
-          source: voltaMark
-          colorization: 1.0
-          colorizationColor: button.active ? button.activeColor : button.foreground
-        }
-      }
+      VoltaMark { tint: button.active ? button.activeColor : button.foreground }
     }
     active: root.opened || audio.muted || Math.abs(audio.balance) >= 0.12
     tooltipText: audio.available
@@ -131,7 +114,7 @@ Panel {
     owner: root
     bar: root.bar
     open: root.opened
-    contentWidth: fittedContentWidth(420)
+    contentWidth: fittedContentWidth(400)
     contentHeight: fittedContentHeight(content.implicitHeight)
 
     Item {
@@ -149,11 +132,11 @@ Panel {
         PanelHero {
           width: parent.width
           title: "Volta"
-          meta: audio.muted ? "Output muted" : "Independent stereo control"
-          detail: audio.channelsLocked ? "L = R" : Model.balanceLabel(audio.balance)
+          meta: audio.available ? Model.percent(audio.left) + " left  ·  " + Model.percent(audio.right) + " right" : "No output available"
+          detail: audio.muted ? "Muted" : (audio.channelsLocked ? "Linked" : Model.balanceLabel(audio.balance))
           foreground: root.foreground
           fontFamily: bar ? bar.fontFamily : Style.font.family
-          iconComponent: Component { Text { text: root.icon(); color: root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.display } }
+          iconComponent: Component { VoltaMark { width: Style.space(34); height: Style.space(34); tint: audio.muted ? root.danger : root.foreground } }
         }
 
         Rectangle {
@@ -195,15 +178,15 @@ Panel {
             }
             PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
-          Text { width: parent.width; text: root.sinkPosition + " of " + audio.sinks.length; color: root.subtle; horizontalAlignment: Text.AlignHCenter; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+          Text { width: parent.width; visible: audio.sinks.length > 1; text: root.sinkPosition + " of " + audio.sinks.length; color: root.subtle; horizontalAlignment: Text.AlignHCenter; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
         }
 
         Column {
           width: parent.width
           spacing: Style.spacing.sm
           PanelSectionHeader { text: "CHANNELS"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
-          ChannelSlider { width: parent.width; label: "LEFT"; hint: "J / K"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
-          ChannelSlider { width: parent.width; label: "RIGHT"; hint: "Shift+J / K"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
+          ChannelSlider { width: parent.width; label: "LEFT"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
+          ChannelSlider { width: parent.width; label: "RIGHT"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
         }
 
         Column {
@@ -220,29 +203,19 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Locked" : "Unlocked"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "L · Lock channels to equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.channelsLocked ? "Linked" : "Link"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; focusable: true; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: audio.muted ? "Unmute" : "Mute"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
           Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
         }
 
-        Rectangle {
+        Text {
           width: parent.width
-          height: shortcuts.implicitHeight + Style.spacing.md * 2
-          radius: Style.cornerRadius
-          color: Style.hoverFillFor(root.foreground, Color.accent)
-          Grid {
-            id: shortcuts
-            anchors.centerIn: parent
-            columns: 2
-            columnSpacing: Style.space(24)
-            rowSpacing: Style.spacing.xs
-            Shortcut { keys: "J / K"; action: "Left − / +" }
-            Shortcut { keys: "⇧J / K"; action: "Right − / +" }
-            Shortcut { keys: "H / L"; action: "Balance" }
-            Shortcut { keys: "← / →"; action: "Output" }
-            Shortcut { keys: "L"; action: "Lock L = R" }
-            Shortcut { keys: "M · R · Q"; action: "Mute · Reset · Close" }
-          }
+          text: "J/K left  ·  ⇧J/K right  ·  H/L balance  ·  M mute  ·  Q close"
+          color: root.subtle
+          font.family: bar ? bar.fontFamily : Style.font.family
+          font.pixelSize: Style.font.caption
+          horizontalAlignment: Text.AlignHCenter
+          wrapMode: Text.WordWrap
         }
       }
     }
@@ -251,7 +224,6 @@ Panel {
   component ChannelSlider: Column {
     id: channel
     property string label: ""
-    property string hint: ""
     property real value: 0
     property bool selected: false
     signal moved(real value)
@@ -259,17 +231,32 @@ Panel {
     opacity: enabled ? 1 : 0.45
     Row {
       width: parent.width
-      Text { text: channel.label + (channel.hint !== "" ? "  ·  " + channel.hint : ""); color: channel.selected ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
+      Text { text: channel.label; color: channel.selected ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
       Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.percent(channel.value); color: channel.value > 1 ? root.danger : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: channel.value > 1 }
     }
     PanelSlider { width: parent.width; value: channel.value; minimum: 0; maximum: 1.5; step: 0.05; tickCount: 4; fillColor: channel.value > 1 ? root.danger : root.foreground; onMoved: function(value) { channel.moved(value) } }
   }
 
-  component Shortcut: Row {
-    property string keys: ""
-    property string action: ""
-    spacing: Style.spacing.sm
-    Text { width: Style.space(54); text: parent.keys; color: Color.accent; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
-    Text { text: parent.action; color: root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+  component VoltaMark: Item {
+    id: mark
+    property color tint: root.foreground
+    implicitWidth: Style.space(28)
+    implicitHeight: Style.space(28)
+    Image {
+      id: markSource
+      anchors.fill: parent
+      source: "assets/volta-bar-icon.png"
+      fillMode: Image.PreserveAspectFit
+      sourceSize.width: Math.max(64, Math.round(width * 4))
+      sourceSize.height: Math.max(64, Math.round(height * 4))
+      visible: false
+      layer.enabled: true
+    }
+    MultiEffect {
+      anchors.fill: markSource
+      source: markSource
+      colorization: 1.0
+      colorizationColor: mark.tint
+    }
   }
 }
