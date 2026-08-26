@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import qs.Ui
 import qs.Commons
 import "Model.js" as Model
@@ -35,7 +36,26 @@ Panel {
   BarIconButton {
     id: button
     bar: root.bar
-    text: root.icon()
+    iconComponent: Component {
+      Item {
+        Image {
+          id: voltaMark
+          anchors.fill: parent
+          source: "assets/volta-bar-icon.png"
+          fillMode: Image.PreserveAspectFit
+          sourceSize.width: Math.round(width * 4)
+          sourceSize.height: Math.round(height * 4)
+          visible: false
+          layer.enabled: true
+        }
+        MultiEffect {
+          anchors.fill: voltaMark
+          source: voltaMark
+          colorization: 1.0
+          colorizationColor: button.active ? button.activeColor : button.foreground
+        }
+      }
+    }
     active: root.opened || audio.muted || Math.abs(audio.balance) >= 0.12
     tooltipText: audio.available
       ? audio.sinkLabel + "\nL " + Model.percent(audio.left) + "  R " + Model.percent(audio.right) + " · " + Model.balanceLabel(audio.balance)
