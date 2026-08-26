@@ -1,27 +1,23 @@
 # Volta for Omarchy
 
-Volta is a focused Omarchy shell plugin for independent left/right output volume and stereo balance control. It provides a compact bar indicator and a theme-native popup without becoming a general-purpose mixer.
+Independent left/right output volume and stereo balance controls for the Omarchy bar.
 
-The bar mark is adapted from the original [Volta logo](https://github.com/mateuspim/volta/blob/master/assets/logo.png), simplified for legibility at status-bar size and colorized to the active Omarchy theme.
+![Volta popup showing channel controls and output selection](preview.png)
 
-![Volta popup showing independent left and right volume, balance, output selection, and linked-channel controls](preview.png)
+## Features
 
-## Requirements
-
-- Omarchy 4.0+
-- The Omarchy Quickshell shell
-- PipeWire
-- A stereo output exposing `FrontLeft` and `FrontRight` channels
+- Separate left and right volume sliders, plus a centered balance control.
+- Link channels, mute, reset to 100%, and select the active output sink.
+- 0–150% range with a visible over-gain warning above 100%.
+- Theme-native bar indicator with mouse, wheel, touchpad, and keyboard support.
 
 ## Install
-
-From the public repository:
 
 ```bash
 omarchy plugin add https://github.com/mateuspim/omarchy-volta.git --enable
 ```
 
-The plugin is installed disabled unless `--enable` is supplied. Remove it with:
+Remove it with:
 
 ```bash
 omarchy plugin remove pym.volta
@@ -29,65 +25,57 @@ omarchy plugin remove pym.volta
 
 ## Controls
 
-- Left click opens the popup; right click toggles mute; middle click resets both channels to 100%.
-- Wheel over the bar icon changes both channels by 5%.
-- The popup provides L/R sliders, balance, linked/independent mode, mute, reset, and output selection.
-- Values above 100% (up to 150%) use the urgent theme color as an over-gain warning.
-- The original TUI controls are preserved: J/K changes the left channel by 5%, Shift+J/K changes the right, H/L shifts balance by 3%, Left/Right or Tab/Shift+Tab cycles outputs, Shift+L locks channels at equal volume, M toggles mute, R resets and unlocks, and Q closes. Up/Down remains available for visual control navigation.
+On the bar: left click opens the popup, right click toggles mute, middle click resets both channels, and the wheel changes both channels by 5%.
 
-Locking averages the current channels and keeps L equal to R while either slider moves. Dragging the balance control preserves the louder channel and attenuates the other side.
+In the popup:
 
-The same actions are available for compositor or script keybindings through `omarchy-shell pym.volta-control`: `mute`, `leftUp`, `leftDown`, `rightUp`, `rightDown`, `balanceLeft`, `balanceRight`, `lock`, `reset`, `previousSink`, and `nextSink`.
+| Key | Action |
+| --- | --- |
+| `j` / `k` | Left volume −/+ 5% |
+| `Shift+j` / `Shift+k` | Right volume −/+ 5% |
+| `h` / `l` | Balance left/right by 3% |
+| `Left` / `Right`, `Shift+Tab` / `Tab` | Previous/next output |
+| `Shift+l` | Link channels (averages them) |
+| `m` | Mute/unmute |
+| `r` | Reset to 100% and unlock |
+| `q` / `Escape` | Close |
+| `Up` / `Down` | Move between controls |
 
-## Backend decision
+For compositor bindings, actions are also available through `omarchy-shell pym.volta-control`: `mute`, `reset`, `lock`, `leftUp`, `leftDown`, `rightUp`, `rightDown`, `balanceLeft`, `balanceRight`, `previousSink`, and `nextSink`.
 
-Volta uses the installed Quickshell PipeWire API directly. `PwNode.audio.channels` provides the reactive channel map and writable `PwNode.audio.volumes` provides end-to-end per-channel reads and mutations. Mute and default-node tracking are native as well, so no volume command is spawned and external PipeWire changes update the UI through QML property notifications.
+## Requirements
 
-Two Omarchy helpers are intentionally retained:
+- Omarchy 4.0+ with the Quickshell-based `omarchy-shell`
+- PipeWire/WirePlumber
+- A stereo output exposing `FrontLeft` and `FrontRight`
 
-- `omarchy-audio-output-sink` resolves the effective physical output behind Omarchy speaker tuning or another DSP sink.
-- `omarchy-audio-output-set-default` applies output selection consistently with Omarchy and WirePlumber.
+Mono outputs and channel maps without both front channels remain usable for mute and sink selection, but independent L/R controls are disabled.
 
-This is smaller and safer than parsing `pactl` output continuously, while matching the built-in audio panel's DSP routing behavior.
+## Backend
+
+Volta uses Quickshell's native PipeWire API for reactive channel reads/writes, mute, and default-node changes. It uses Omarchy's `omarchy-audio-output-sink` and `omarchy-audio-output-set-default` helpers so speaker tuning/DSP routing follows the system audio panel. No daemon, sudo access, or continuously spawned volume command is required.
 
 ## Development
 
-For a local development copy, link the repository only into the user plugin directory:
+From a checkout, link the plugin into the user plugin directory (never `/usr/share/omarchy`):
 
 ```bash
 ln -s /path/to/omarchy-volta ~/.config/omarchy/plugins/pym.volta
-```
-
-Do not place development files under `/usr/share/omarchy`. Validate, test, rescan, and enable with:
-
-```bash
 npm test
 omarchy plugin validate .
 omarchy-shell shell rescanPlugins
 omarchy plugin enable pym.volta
 ```
 
-Plugin files hot-reload when edited inside the user plugin directory.
-
-## Limitations
-
-- Mono outputs and unusual channel maps remain visible and support mute/output selection, but independent sliders are disabled with an explanation.
-- Volta controls the front-left/front-right pair on surround devices and leaves every other channel unchanged.
-- Bluetooth profiles that expose stereo work; hands-free/mono profiles do not provide independent L/R control.
-- PipeWire node labels depend on metadata made available by the active session manager.
-- A limiter or hardware device may make 100–150% sound no louder even though PipeWire accepts the value.
+Changes under the user plugin directory hot-reload with the shell.
 
 ## Troubleshooting
 
-- **No output:** confirm PipeWire/WirePlumber is running with `wpctl status`, then restart the shell with `omarchy restart shell`.
-- **Stereo controls disabled:** inspect the selected sink's channel map. Mono and channel maps without `FrontLeft`/`FrontRight` are intentionally rejected.
-- **Wrong device behind DSP:** run `omarchy-audio-output-sink`; Volta falls back to PipeWire's default and shows an error if resolution fails.
-- **Plugin not visible:** run `omarchy plugin validate .`, `omarchy-shell shell rescanPlugins`, and `omarchy plugin enable pym.volta`.
-- **A write does not stick:** another audio policy or application may be replacing the value. Volta reflects the resulting PipeWire state instead of keeping stale optimistic UI state.
-
-## Verification status
-
-Pure model tests cover clamping, formatting, channel-map parsing, stereo mutation, and balance math using stereo, mono, and surround fixtures. Plugin validation checks the manifest and entry point. Device behavior should be exercised after installation with stereo, mono/Bluetooth, HDMI, virtual/DSP, disconnected, and no-sink states; unavailable hardware is not simulated by the plugin.
+- **No output:** check `wpctl status`, then run `omarchy restart shell`.
+- **Stereo controls disabled:** the selected sink is mono or lacks `FrontLeft`/`FrontRight`.
+- **Plugin not visible:** run `omarchy plugin validate .`, rescan plugins, and enable `pym.volta`.
+- **Wrong device behind DSP:** verify `omarchy-audio-output-sink`; Volta reports a visible error if resolution fails.
+- **A value does not stick:** another audio policy may be changing it; Volta reflects the resulting PipeWire state.
 
 ## License
 
