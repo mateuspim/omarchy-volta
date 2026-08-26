@@ -13,6 +13,9 @@ QtObject {
   property string resolvedSinkName: ""
   property var sinkAvailability: ({})
   property bool sinkAvailabilityLoaded: false
+  property int resolverRequestedGeneration: 0
+  property int resolverRunningGeneration: 0
+  property bool resolverPending: false
   property string error: ""
   property bool channelsLocked: false
   property bool writePending: false
@@ -90,7 +93,18 @@ QtObject {
   }
 
   function resolvePhysicalSink() {
-    if (!resolver.running) resolver.running = true
+    resolverRequestedGeneration++
+    if (resolver.running) {
+      resolverPending = true
+      return
+    }
+    startResolver()
+  }
+
+  function startResolver() {
+    resolverPending = false
+    resolverRunningGeneration = resolverRequestedGeneration
+    resolver.running = true
   }
 
   function validateWritable() {
@@ -198,23 +212,30 @@ QtObject {
   }
 
   property Process resolver: Process {
+    property string output: ""
     command: ["omarchy-audio-output-sink"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: {
-        root.resolvedSinkName = String(text).trim()
-        if (!root.available) root.error = "No output sink is available."
-        else if (root.error === "No output sink is available.") root.error = ""
-      }
+      onStreamFinished: resolver.output = String(text).trim()
     }
+    onStarted: output = ""
     onExited: function(exitCode) {
-      if (exitCode !== 0) {
-        root.resolvedSinkName = ""
-        root.error = "Could not resolve the physical output; using the PipeWire default."
+      if (root.resolverRunningGeneration === root.resolverRequestedGeneration) {
+        if (exitCode === 0) {
+          root.resolvedSinkName = output
+          if (!root.available) root.error = "No output sink is available."
+          else if (root.error === "No output sink is available.") root.error = ""
+        } else {
+          root.resolvedSinkName = ""
+          root.error = "Could not resolve the physical output; using the PipeWire default."
+        }
       }
+      if (root.resolverPending || root.resolverRunningGeneration < root.resolverRequestedGeneration)
+        root.resolverRetryTimer.restart()
     }
   }
 
+  property Timer resolverRetryTimer: Timer { interval: 0; onTriggered: root.startResolver() }
   property Timer resolveTimer: Timer { interval: 250; onTriggered: root.resolvePhysicalSink() }
   property Timer refreshTimer: Timer {
     interval: 15000
