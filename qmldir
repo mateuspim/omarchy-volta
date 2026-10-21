@@ -5,3 +5,4 @@ KeyCap 1.0 KeyCap.qml
 KeyHints 1.0 KeyHints.qml
 StereoStage 1.0 StereoStage.qml
 LevelSlider 1.0 LevelSlider.qml
+OutputList 1.0 OutputList.qml

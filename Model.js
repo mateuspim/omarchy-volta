@@ -125,10 +125,9 @@ function meterSegment(index, value) {
   return inZone ? "zone" : "off"
 }
 
-function heroMeta(available, mono, position, count) {
+function heroMeta(available, mono) {
   if (!available) return "No output available"
-  var mode = mono ? "Mono" : "Stereo"
-  return count > 1 ? mode + " · output " + position + " of " + count : mode + " output"
+  return mono ? "Mono output" : "Stereo output"
 }
 
 function heroDetail(muted, linked, balanceValue, stereo) {
@@ -144,4 +143,82 @@ function footerHints(stereo) {
   if (stereo) hints.push({ keys: ["⇧L"], label: "link" })
   hints.push({ keys: ["M"], label: "mute" }, { keys: ["R"], label: "reset" }, { keys: ["Q"], label: "close" })
   return hints
+}
+
+// PwNode.properties is only valid once the node is bound (the model's
+// PwObjectTracker binds every candidate sink), so read it through here.
+function nodeProps(node) {
+  return node && node.ready && node.properties ? node.properties : {}
+}
+
+// Plain label for PlainText rows: bounded like sinkLabel but not escaped,
+// since nothing here is parsed as rich text.
+function plainSinkLabel(node) {
+  if (!node) return "No output"
+  return String(node.description || node.nickname || node.name || "Output").slice(0, MAX_SINK_LABEL_LENGTH)
+}
+
+// How the output is attached, for the row subtitle. Empty when unknown
+// (for example, properties not bound yet).
+// sinkConnection({ "device.api": "bluez5" }, "bluez_output.x") -> "Bluetooth"
+function sinkConnection(props, nodeName) {
+  var p = props || {}
+  var name = String(nodeName || "")
+  if (Object.keys(p).length === 0 && name === "") return ""
+  var api = String(p["device.api"] || "")
+  var bus = String(p["device.bus"] || "")
+  var profile = (name + " " + (p["device.profile.name"] || "") + " " + (p["device.profile.description"] || "")).toLowerCase()
+  if (api === "bluez5" || /^bluez_/.test(name)) return "Bluetooth"
+  if (/displayport/.test(profile)) return "DisplayPort"
+  if (/hdmi/.test(profile)) return "HDMI"
+  if (bus === "usb") return "USB"
+  if (bus === "pci" || api === "alsa") return "Built-in"
+  if (Object.keys(p).length > 0 && api === "") return "Virtual"
+  return ""
+}
+
+// Device type for the row icon: headphones, display, speakers, bluetooth,
+// usb or generic, from the form factor first and then names and icons.
+function sinkKind(props, text, connection) {
+  var p = props || {}
+  var formFactor = String(p["device.form-factor"] || "").toLowerCase()
+  var blob = (String(text || "") + " " + (p["device.icon-name"] || "") + " " + (p["device.product.name"] || "")).toLowerCase()
+  if (/head(phone|set)|handset|earbud|earphone|airpod|\bbuds\b/.test(formFactor + " " + blob)) return "headphones"
+  if (connection === "HDMI" || connection === "DisplayPort" || /hdmi|tv|monitor|display/.test(formFactor)) return "display"
+  if (/speaker|hifi|car/.test(formFactor) || /speaker/.test(blob)) return "speakers"
+  if (connection === "Bluetooth") return "bluetooth"
+  if (connection === "USB") return "usb"
+  return "generic"
+}
+
+var SINK_GLYPHS = { headphones: "󰋋", display: "󰍹", speakers: "󰓃", bluetooth: "󰂯", usb: "󰕓", generic: "󰕾" }
+
+// One row of the output list. channelNames may be empty when the node's
+// audio is not bound yet; the layout note is then left out, not guessed.
+function sinkEntry(node, props, channelNames, active) {
+  var name = String(node && node.name || "")
+  var connection = sinkConnection(props, name)
+  var kind = sinkKind(props, name + " " + plainSinkLabel(node), connection)
+  var names = channelNames || []
+  var layout = names.length > 0 ? stereoIndices(names) : null
+  var note = !layout || (layout.left >= 0 && layout.right >= 0) ? "" : (layout.mono >= 0 ? "mono" : "no stereo")
+  var subtitle = [connection, note].filter(function(part) { return part !== "" }).join(" · ")
+  return { id: String(node && node.id !== undefined ? node.id : name), label: plainSinkLabel(node), kind: kind,
+           glyph: SINK_GLYPHS[kind], subtitle: subtitle, stereo: note === "", active: !!active }
+}
+
+// Which outputs the list shows. Up to `limit` (4) are always all shown.
+// Above that the collapsed list shows a window of `collapsedCount` (3) rows
+// in list order around the active output, plus a "+N more" count.
+// visibleOutputs(six, false) -> { rows: [three], hidden: 3, overflow: true }
+function visibleOutputs(entries, expanded, limit, collapsedCount) {
+  var all = entries || []
+  var maxAll = limit === undefined ? 4 : limit
+  var windowSize = collapsedCount === undefined ? 3 : collapsedCount
+  if (all.length <= maxAll) return { rows: all.slice(), hidden: 0, overflow: false }
+  if (expanded) return { rows: all.slice(), hidden: 0, overflow: true }
+  var active = 0
+  for (var i = 0; i < all.length; i++) if (all[i].active) active = i
+  var start = Math.max(0, Math.min(all.length - windowSize, active - 1))
+  return { rows: all.slice(start, start + windowSize), hidden: all.length - windowSize, overflow: true }
 }

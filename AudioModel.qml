@@ -77,11 +77,13 @@ QtObject {
       if (sinks[i] === defaultSink || String(sinks[i].name || "") === String(defaultSink ? defaultSink.name || "" : "")) return i
     return -1
   }
-  readonly property var sinkOptions: {
+  // One entry per output for the popup's list: icon kind, plain label,
+  // connection subtitle and whether it is the default (Model.sinkEntry).
+  readonly property var sinkEntries: {
     var result = []
     for (var i = 0; i < sinks.length; i++)
       if (sinks[i].id !== undefined)
-        result.push({ value: String(sinks[i].id), label: Model.sinkLabel(sinks[i]) })
+        result.push(Model.sinkEntry(sinks[i], Model.nodeProps(sinks[i]), nodeChannelNames(sinks[i]), i === sinkIndex))
     return result
   }
 
@@ -95,6 +97,13 @@ QtObject {
   onDefaultSinkChanged: {
     resolvePhysicalSink()
     refreshAvailability()
+  }
+
+  function nodeChannelNames(node) {
+    var result = []
+    var channels = node && node.ready && node.audio ? node.audio.channels || [] : []
+    for (var i = 0; i < channels.length; i++) result.push(PwAudioChannel.toString(channels[i]))
+    return result
   }
 
   function sinkAvailable(node) {

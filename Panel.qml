@@ -13,31 +13,32 @@ Panel {
 
   property int keyboardRow: 0
   property real wheelAccumulator: 0
-  property var displaySinkOptions: []
+  property var displaySinkEntries: []
+  property bool outputsExpanded: false
   readonly property var audio: Volta.AudioService.audio
   readonly property color foreground: bar ? bar.foreground : Commons.Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
   readonly property color danger: bar ? bar.urgent : Commons.Color.urgent
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
-  readonly property int sinkPosition: audio.sinkIndex >= 0 ? audio.sinkIndex + 1 : (audio.sinks.length > 0 ? 1 : 0)
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
   onOpenedChanged: {
     if (opened) {
-      refreshSinkOptions()
+      refreshSinkEntries()
       Qt.callLater(function() { keySurface.forceActiveFocus() })
     } else {
-      sinkOptionsTimer.stop()
-      displaySinkOptions = []
+      sinkEntriesTimer.stop()
+      displaySinkEntries = []
+      outputsExpanded = false
     }
   }
 
-  function scheduleSinkOptionsRefresh() {
-    if (opened) sinkOptionsTimer.restart()
+  function scheduleSinkEntriesRefresh() {
+    if (opened) sinkEntriesTimer.restart()
   }
-  function refreshSinkOptions() {
-    if (opened) displaySinkOptions = audio.sinkOptions.slice()
+  function refreshSinkEntries() {
+    if (opened) displaySinkEntries = audio.sinkEntries.slice()
   }
 
   function icon() {
@@ -47,6 +48,11 @@ Panel {
     if (Math.abs(audio.balance) >= 0.12) return audio.balance < 0 ? "󰋋" : "󰋎"
     return Math.max(audio.left, audio.right) > 1 ? "󱄠" : "󰕾"
   }
+  // Enter on the output row shows or hides the outputs past the first few;
+  // with four or fewer outputs every one is already listed.
+  function toggleOutputsExpanded() {
+    if (Model.visibleOutputs(displaySinkEntries, outputsExpanded).overflow) outputsExpanded = !outputsExpanded
+  }
   function adjust(row, delta) {
     if (row === 1) {
       if (audio.mono) audio.setVolume(audio.volume + delta)
@@ -55,7 +61,6 @@ Panel {
     else if (row === 3) audio.setBalance(audio.balance + delta * 4)
   }
   function handleKey(event) {
-    if (sinkPicker.popupOpen) return
     if (event.key === Qt.Key_Escape || event.text === "q") { root.close(); event.accepted = true; return }
     if (event.key === Qt.Key_Tab) { audio.cycleSink((event.modifiers & Qt.ShiftModifier) ? -1 : 1); event.accepted = true; return }
     if (event.key === Qt.Key_Backtab) { audio.cycleSink(-1); event.accepted = true; return }
@@ -83,7 +88,7 @@ Panel {
     if (event.text === "m") { audio.toggleMute(); event.accepted = true; return }
     if (event.text === "r") { audio.reset(); event.accepted = true; return }
     if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
-      if (keyboardRow === 0) sinkPicker.open()
+      if (keyboardRow === 0) toggleOutputsExpanded()
       else if (keyboardRow === 4) audio.toggleLock()
       else if (keyboardRow === 5) audio.toggleMute()
       else if (keyboardRow === 6) audio.reset()
@@ -94,13 +99,13 @@ Panel {
 
   Connections {
     target: audio
-    function onSinkOptionsChanged() { root.scheduleSinkOptionsRefresh() }
+    function onSinkEntriesChanged() { root.scheduleSinkEntriesRefresh() }
   }
 
   Timer {
-    id: sinkOptionsTimer
+    id: sinkEntriesTimer
     interval: 75
-    onTriggered: root.refreshSinkOptions()
+    onTriggered: root.refreshSinkEntries()
   }
 
   BarIconButton {
@@ -157,31 +162,23 @@ Panel {
         PanelHero {
           width: parent.width
           title: "Volta"
-          meta: Model.heroMeta(audio.available, audio.mono, root.sinkPosition, audio.sinks.length)
+          meta: Model.heroMeta(audio.available, audio.mono)
           detail: Model.heroDetail(audio.muted, audio.channelsLocked, audio.balance, audio.stereoSupported)
           foreground: root.foreground
           fontFamily: root.fontFamily
           iconComponent: Component { Volta.VoltaMark { width: Style.space(34); height: Style.space(34); tint: audio.muted ? root.danger : Commons.Color.accent } }
         }
 
-        Row {
+        Volta.OutputList {
           width: parent.width
-          spacing: Style.spacing.xs
-          PanelActionButton { iconText: "󰅁"; tooltipText: "Previous output · Left / Shift+Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(-1); keySurface.forceActiveFocus() } }
-          Dropdown {
-            id: sinkPicker
-            width: parent.width - parent.spacing * 2 - Style.space(44)
-            showLabel: false
-            value: audio.sinkId
-            options: root.displaySinkOptions
-            hasCursor: root.keyboardRow === 0
-            foreground: root.foreground
-            fontFamily: root.fontFamily
-            onChanged: function(value) { audio.selectSinkId(value) }
-            Accessible.role: Accessible.ComboBox
-            Accessible.name: "Output sink"
-          }
-          PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
+          entries: root.displaySinkEntries
+          expanded: root.outputsExpanded
+          selected: root.keyboardRow === 0
+          foreground: root.foreground
+          fontFamily: root.fontFamily
+          onChosen: function(id) { audio.selectSinkId(id); keySurface.forceActiveFocus() }
+          onCycled: function(delta) { audio.cycleSink(delta) }
+          onExpandToggled: { root.outputsExpanded = !root.outputsExpanded; keySurface.forceActiveFocus() }
         }
 
         Volta.StereoStage {

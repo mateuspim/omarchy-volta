@@ -9,10 +9,15 @@ QtObject {
   id: root
 
   property bool optionsActive: false
+  // Sample nodes shaped like bound PwNodes: PipeWire-style properties and
+  // channel names, so the output list classifies them as it would real ones.
   property var sinks: [
-    { id: 41, name: "sample.studio-headphones", description: "Studio Headphones" },
-    { id: 42, name: "sample.desk-speakers", description: "Desk Speakers" },
-    { id: 43, name: "sample.monitor-hdmi", description: "Monitor HDMI Audio" }
+    { id: 41, name: "alsa_output.usb-sample_studio.analog-stereo", description: "Studio Headphones", ready: true,
+      properties: { "device.api": "alsa", "device.bus": "usb", "device.form-factor": "headphone" }, channels: ["FrontLeft", "FrontRight"] },
+    { id: 42, name: "alsa_output.pci-sample_desk.analog-stereo", description: "Desk Speakers", ready: true,
+      properties: { "device.api": "alsa", "device.bus": "pci", "device.form-factor": "speaker" }, channels: ["FrontLeft", "FrontRight"] },
+    { id: 43, name: "alsa_output.usb-sample_conference.mono-fallback", description: "Conference Speakerphone", ready: true,
+      properties: { "device.api": "alsa", "device.bus": "usb", "device.form-factor": "speakerphone" }, channels: ["Mono"] }
   ]
   property int sinkIndex: 0
   property bool available: true
@@ -29,8 +34,8 @@ QtObject {
   readonly property var sink: sinkIndex >= 0 && sinkIndex < sinks.length ? sinks[sinkIndex] : null
   readonly property string sinkId: sink ? String(sink.id) : ""
   readonly property string sinkLabel: Model.sinkLabel(sink)
-  readonly property var sinkOptions: sinks.map(function(node) {
-    return { value: String(node.id), label: Model.sinkLabel(node) }
+  readonly property var sinkEntries: sinks.map(function(node, i) {
+    return Model.sinkEntry(node, Model.nodeProps(node), node.channels || [], i === sinkIndex)
   })
 
   function setLeft(value) { left = Model.clampVolume(value); if (channelsLocked) right = left }

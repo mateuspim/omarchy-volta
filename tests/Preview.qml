@@ -13,10 +13,23 @@ ShellRoot {
 
   readonly property var audio: Volta.AudioService.audio
   readonly property var scenes: [
-    { name: "headphones", sinkIndex: 0, left: 0.64, right: 1.18, locked: false, muted: false, mono: false, row: 3 },
-    { name: "speakers", sinkIndex: 1, left: 0.8, right: 0.8, locked: true, muted: false, mono: false, row: 0 },
-    { name: "mono", sinkIndex: 2, left: 0.72, right: 0.72, locked: false, muted: false, mono: true, row: 1 },
-    { name: "muted", sinkIndex: 0, left: 0.9, right: 0.55, locked: false, muted: true, mono: false, row: 5 }
+    { name: "headphones", outputs: "three", sinkIndex: 0, left: 0.64, right: 1.18, locked: false, muted: false, mono: false, row: 3 },
+    { name: "speakers", outputs: "three", sinkIndex: 1, left: 0.8, right: 0.8, locked: true, muted: false, mono: false, row: 0 },
+    { name: "mono", outputs: "three", sinkIndex: 2, left: 0.72, right: 0.72, locked: false, muted: false, mono: true, row: 1 },
+    { name: "muted", outputs: "three", sinkIndex: 0, left: 0.9, right: 0.55, locked: false, muted: true, mono: false, row: 5 },
+    { name: "six-outputs", outputs: "six", sinkIndex: 1, left: 0.8, right: 0.8, locked: false, muted: false, mono: false, row: 0 },
+    { name: "six-outputs-expanded", outputs: "six", sinkIndex: 3, left: 0.7, right: 0.75, locked: false, muted: false, mono: false, row: 0, expanded: true }
+  ]
+  // The fake model's three sample outputs, plus three more for the overflow
+  // scenes. Names, buses and addresses are made up.
+  property var threeSinks: []
+  readonly property var extraSinks: [
+    { id: 44, name: "alsa_output.pci-sample_gpu.hdmi-stereo", description: "Living Room TV", ready: true,
+      properties: { "device.api": "alsa", "device.bus": "pci", "device.profile.name": "hdmi-stereo" }, channels: ["FrontLeft", "FrontRight"] },
+    { id: 45, name: "bluez_output.sample_earbuds.1", description: "Wireless Earbuds", ready: true,
+      properties: { "device.api": "bluez5" }, channels: ["FrontLeft", "FrontRight"] },
+    { id: 46, name: "bluez_output.sample_speaker.1", description: "Portable Speaker", ready: true,
+      properties: { "device.api": "bluez5" }, channels: ["FrontLeft", "FrontRight"] }
   ]
   property int sceneIndex: 0
   property Item card: null
@@ -44,15 +57,16 @@ ShellRoot {
   FloatingWindow {
     title: "Volta · sample preview"
     implicitWidth: 520
-    implicitHeight: 960
+    implicitHeight: 1400
     color: Commons.Color.background
     Item { id: mount; anchors.fill: parent; anchors.margins: 20 }
   }
 
   function applyScene(scene) {
-    audio.sinks = audio.sinks.map(function(node, i) {
-      return i === 2 ? { id: node.id, name: "sample.speakerphone", description: "Conference Speakerphone" } : node
-    })
+    if (threeSinks.length === 0) threeSinks = audio.sinks.slice()
+    audio.sinks = scene.outputs === "six"
+      ? [threeSinks[0], threeSinks[1], extraSinks[0], extraSinks[1], extraSinks[2], threeSinks[2]]
+      : threeSinks
     audio.sinkIndex = scene.sinkIndex
     audio.mono = scene.mono
     audio.stereoSupported = !scene.mono
@@ -62,6 +76,7 @@ ShellRoot {
     audio.channelsLocked = scene.locked
     audio.muted = scene.muted
     widget.keyboardRow = scene.row
+    widget.outputsExpanded = !!scene.expanded
   }
 
   function capture() {
