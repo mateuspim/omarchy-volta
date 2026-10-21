@@ -55,12 +55,12 @@
 <path d="M209 1712H1395" stroke="url(#line)" stroke-width="5"/>
 <text x="208" y="1795" font-family="DejaVu Sans Mono,monospace" font-size="36" letter-spacing="3" fill="#71838f">OMARCHY  /  PIPEWIRE  /  QUICKSHELL</text>
 <!-- Behind each offscreen capture (sample outputs, no real devices), a wide soft shadow adds depth without altering UI text. -->
-<g transform="translate(2010 230) rotate(-4 575 486)">
-  <rect x="30" y="42" width="1150" height="980" rx="22" fill="#000" opacity=".55" filter="url(#shadow)"/>
-  <image width="1150" height="972" href="captures/speakers.png"/>
+<g transform="translate(2060 130) rotate(-4 440 560)">
+  <rect x="28" y="40" width="880" height="1128" rx="22" fill="#000" opacity=".55" filter="url(#shadow)"/>
+  <image width="880" height="1120" href="captures/speakers.png"/>
 </g>
-<g transform="translate(2470 900) rotate(3 625 528)">
-  <rect x="35" y="47" width="1250" height="1066" rx="24" fill="#000" opacity=".67" filter="url(#shadow)"/>
-  <image width="1250" height="1056" href="captures/headphones.png"/>
+<g transform="translate(2640 730) rotate(3 500 636)">
+  <rect x="32" y="45" width="1000" height="1282" rx="24" fill="#000" opacity=".67" filter="url(#shadow)"/>
+  <image width="1000" height="1272" href="captures/headphones.png"/>
 </g>
 </svg>
