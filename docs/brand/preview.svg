@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 3840 2160">
+<defs>
+  <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0b1015"/><stop offset=".58" stop-color="#0a111b"/><stop offset="1" stop-color="#102236"/>
+  </linearGradient>
+  <radialGradient id="amberGlow" cx="0" cy="1" r="1">
+    <stop offset="0" stop-color="#c47a0c" stop-opacity=".27"/><stop offset=".64" stop-color="#c47a0c" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="blueGlow" cx="1" cy="0" r="1">
+    <stop offset="0" stop-color="#264d78" stop-opacity=".27"/><stop offset=".7" stop-color="#264d78" stop-opacity="0"/>
+  </radialGradient>
+  <pattern id="dots" width="56" height="56" patternUnits="userSpaceOnUse">
+    <circle cx="5" cy="5" r="2.4" fill="#7a8f9d" opacity=".16"/>
+  </pattern>
+  <linearGradient id="line" x1="0" x2="1"><stop stop-color="#f5a524"/><stop offset="1" stop-color="#f5a524" stop-opacity="0"/></linearGradient>
+  <filter id="shadow" x="-.2" y="-.2" width="1.5" height="1.6"><feGaussianBlur stdDeviation="45"/></filter>
+</defs>
+<rect width="3840" height="2160" fill="url(#background)"/>
+<rect width="3840" height="2160" fill="url(#amberGlow)"/>
+<rect width="3840" height="2160" fill="url(#blueGlow)"/>
+<rect width="3840" height="2160" fill="url(#dots)"/>
+<rect x="0" y="0" width="3840" height="2160" fill="#070b0f" opacity=".13"/>
+<!-- The icon paths are inlined so the standalone SVG renders without external references. -->
+<g transform="translate(198 398) scale(0.90625)">
+  <rect x="5" y="5" width="246" height="246" rx="48" fill="#1f1709" stroke="#f5a524" stroke-width="6"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M66 52V128M96 74V152" stroke="#f5a524" stroke-width="20"/>
+    <path d="M128 96V170" stroke="#ffd58a" stroke-width="20"/>
+    <path d="M160 74V152M190 52V128" stroke="#f5a524" stroke-width="20"/>
+    <path d="M56 204H200" stroke="#b9760f" stroke-width="10"/>
+  </g>
+  <circle cx="128" cy="204" r="17" fill="#f5a524" stroke="#1f1709" stroke-width="7"/>
+</g>
+<text x="478" y="596" font-family="DejaVu Sans,sans-serif" font-size="242" font-weight="700" letter-spacing="-8" fill="#f5a524">Volta</text>
+<text x="208" y="816" font-family="DejaVu Sans Mono,monospace" font-size="88" font-weight="700" fill="#e9f0f5">Stereo balance in your bar.</text>
+<text x="208" y="932" font-family="DejaVu Sans Mono,monospace" font-size="48" fill="#9ca9b4">Set left and right volume on their own,</text>
+<text x="208" y="1000" font-family="DejaVu Sans Mono,monospace" font-size="48" fill="#9ca9b4">balance them, and switch outputs from Omarchy.</text>
+<g font-family="DejaVu Sans Mono,monospace" font-size="34" fill="#e6edf0">
+  <rect x="208" y="1095" width="500" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="250" cy="1147" r="11" fill="#f5a524"/><text x="280" y="1161">Left + right levels</text>
+  <rect x="730" y="1095" width="400" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="772" cy="1147" r="11" fill="#f5a524"/><text x="802" y="1161">Stereo balance</text>
+  <rect x="1152" y="1095" width="420" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="1194" cy="1147" r="11" fill="#f5a524"/><text x="1224" y="1161">0–150% range</text>
+  <rect x="208" y="1220" width="500" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="250" cy="1272" r="11" fill="#f5a524"/><text x="280" y="1286">Link, mute, reset</text>
+  <rect x="730" y="1220" width="400" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="772" cy="1272" r="11" fill="#f5a524"/><text x="802" y="1286">Output switch</text>
+  <rect x="1152" y="1220" width="420" height="104" fill="#101b22" stroke="#35454d" stroke-width="3"/>
+  <circle cx="1194" cy="1272" r="11" fill="#f5a524"/><text x="1224" y="1286">Keyboard first</text>
+</g>
+<rect x="208" y="1440" width="1640" height="140" fill="#0b1218" stroke="#3c505c" stroke-width="3"/>
+<text x="258" y="1527" font-family="DejaVu Sans Mono,monospace" font-size="46" fill="#f5a524">$</text>
+<text x="320" y="1527" font-family="DejaVu Sans Mono,monospace" font-size="46" fill="#e8eff4">omarchy plugin add github.com/mateuspim/omarchy-volta</text>
+<path d="M209 1712H1395" stroke="url(#line)" stroke-width="5"/>
+<text x="208" y="1795" font-family="DejaVu Sans Mono,monospace" font-size="36" letter-spacing="3" fill="#71838f">OMARCHY  /  PIPEWIRE  /  QUICKSHELL</text>
+<!-- Behind each offscreen capture (sample outputs, no real devices), a wide soft shadow adds depth without altering UI text. -->
+<g transform="translate(2010 230) rotate(-4 575 486)">
+  <rect x="30" y="42" width="1150" height="980" rx="22" fill="#000" opacity=".55" filter="url(#shadow)"/>
+  <image width="1150" height="972" href="captures/speakers.png"/>
+</g>
+<g transform="translate(2470 900) rotate(3 625 528)">
+  <rect x="35" y="47" width="1250" height="1066" rx="24" fill="#000" opacity=".67" filter="url(#shadow)"/>
+  <image width="1250" height="1056" href="captures/headphones.png"/>
+</g>
+</svg>

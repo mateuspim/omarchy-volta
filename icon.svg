@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Volta icon: left and right level bars over a centred balance slider">
+  <rect x="5" y="5" width="246" height="246" rx="48" fill="#1f1709" stroke="#f5a524" stroke-width="6"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M66 52V128M96 74V152" stroke="#f5a524" stroke-width="20"/>
+    <path d="M128 96V170" stroke="#ffd58a" stroke-width="20"/>
+    <path d="M160 74V152M190 52V128" stroke="#f5a524" stroke-width="20"/>
+    <path d="M56 204H200" stroke="#b9760f" stroke-width="10"/>
+  </g>
+  <circle cx="128" cy="204" r="17" fill="#f5a524" stroke="#1f1709" stroke-width="7"/>
+</svg>
