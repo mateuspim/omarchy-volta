@@ -1,6 +1,6 @@
 # <img src="icon.svg" alt="" width="32" height="32" align="top"> Volta
 
-![Volta: stereo balance in your Omarchy bar. Two popups with sample outputs: Desk Speakers linked at 80 % per channel, and Studio Headphones at 64 % left and 118 % right with the over-gain level in red and balance 46 % right](preview.png)
+![Volta: stereo balance in your Omarchy bar. Two popups with sample outputs, each with large left and right readouts over a mirrored stereo meter: Desk Speakers linked at 80 % per channel, and Studio Headphones at 64 % left and 118 % right, where the meter and slider run into the red over-gain zone and balance sits 46 % right](preview.png)
 
 **Independent left and right output volume and stereo balance for the
 Omarchy bar, on the native PipeWire API and Omarchy's own output rules.**
@@ -16,13 +16,18 @@ Click the Volta mark in the bar, then use `j`/`k` for the left channel,
 
 ## Features
 
-- Separate left and right volume sliders, plus a centred balance control
-  that keeps the louder side's level.
+- A stereo stage: large left and right readouts over a mirrored meter that
+  grows out from the centre, so imbalance and over-gain show at a glance.
+- Separate left and right volume sliders, plus a balance control that
+  fills from a centre detent and keeps the louder side's level.
 - Link channels, mute, reset to 100 %, and choose the active output.
-- 0-150 % range with a visible over-gain warning above 100 %.
+- 0-150 % range; the 100-150 % over-gain zone is tinted on every meter
+  and slider.
 - Follows Omarchy's speaker tuning and DSP routing, like the system audio
   panel.
-- Theme-native bar mark with mouse, wheel, touchpad and keyboard support.
+- Theme-native: the popup draws only from your Omarchy theme colours.
+- Keyboard first, with the keys shown as keycaps beside each control; mouse,
+  wheel and touchpad work too.
 - Shows when PipeWire or another policy did not keep a change.
 - IPC actions for your own key bindings; no global bindings installed.
 

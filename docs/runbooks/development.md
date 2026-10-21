@@ -51,8 +51,8 @@ Check UI changes without touching the desktop or PipeWire
 VOLTA_PREVIEW_DIR="$PWD/.preview" bash tests/preview.sh
 ```
 
-It writes `headphones.png`, `speakers.png` and `mono.png` (scenes defined
-in `tests/Preview.qml`) and fails on QML errors, binding loops or
+It writes `headphones.png`, `speakers.png`, `mono.png` and `muted.png`
+(scenes defined in `tests/Preview.qml`) and fails on QML errors, binding loops or
 `Unable to assign` warnings. `QT_SCALE_FACTOR` (default 2) sets the pixel
 density. How it works:
 
@@ -63,7 +63,10 @@ density. How it works:
   `tests/offscreen/AudioModel.qml`, which has the same public properties but
   sample outputs and no PipeWire import.
 - A throwaway `HOME` with `tests/offscreen/colors.toml` (the shell's default
-  palette with Volta's amber accent) keeps your theme and settings out.
+  palette with Volta's amber accent) keeps your theme and settings out. Set
+  `VOLTA_PREVIEW_COLORS` to another `colors.toml`, for example
+  `/usr/share/omarchy/themes/catppuccin-latte/colors.toml`, to check that the
+  popup follows light themes and other accents.
 - `MultiEffect` draws nothing on the offscreen software renderer, so the
   harness shows the mark's white source image instead of the tinted one.
 

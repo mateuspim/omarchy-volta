@@ -11,10 +11,11 @@ is the user manual; read its section before changing a feature.
 
 - Layout: every `.qml` and `.js` file at the root. Omarchy loads the one
   entry point in `manifest.json` (`Panel.qml`, a `bar-widget`); QML finds
-  `AudioService` and `AudioModel` through `qmldir`, so a new component goes in
-  `qmldir` too. Don't add QML subfolders. `assets/volta-bar-icon.png` is the
-  bar and popup mark (`VoltaMark` in `Panel.qml`). Tests and the offscreen
-  harness in `tests/`, brand sources in `docs/brand/`.
+  every sibling type (`AudioService`, `AudioModel`, the popup components)
+  through `qmldir`, so a new component goes in `qmldir` too. Don't add QML
+  subfolders. `assets/volta-bar-icon.png` is the bar and popup mark
+  (`VoltaMark.qml`). Tests and the offscreen harness in `tests/`, brand
+  sources in `docs/brand/`.
 - Pure logic (clamping, channel maps, balance, labels) goes in `Model.js` so
   Node can test it. `AudioModel.qml` owns PipeWire state and writes;
   `AudioService.qml` is the one shared instance plus the IPC handler;

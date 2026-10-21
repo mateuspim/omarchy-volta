@@ -25,6 +25,7 @@ project's original plan, not from contemporaneous notes.
 | [10](0010-verify-writes-and-report-overrides.md) | Verify writes and show when PipeWire does not keep them | 2026-08-25 | Accepted |
 | [11](0011-qualify-theme-color-for-qt-6-12.md) | Qualify the theme `Color` as `Commons.Color` (Qt 6.12) | 2026-10-21 | Accepted |
 | [12](0012-offscreen-preview-harness.md) | Render previews offscreen with a fake audio model | 2026-10-21 | Accepted |
+| [13](0013-stereo-stage-popup.md) | Lead the popup with a stereo stage, drawn from theme colours | 2026-10-21 | Accepted |
 
 ## Rules
 

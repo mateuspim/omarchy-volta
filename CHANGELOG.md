@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Redesign the popup: a stereo stage with large L/R readouts over a mirrored
+  meter, sliders with a tinted 100-150 % over-gain zone and a balance fill
+  from the centre, keycap hints beside each control, Link and Mute as
+  toggles, and a keycap footer. All widget colours come from the theme.
+- Render previews under any theme with `VOLTA_PREVIEW_COLORS`; add a muted
+  preview scene.
+- Refresh the README hero with the new popup.
+
 ## 0.2.0 - 2026-10-21
 
 - Fix theme colours on Qt 6.12: the centred balance label, the focused

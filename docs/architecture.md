@@ -1,12 +1,17 @@
 # Architecture
 
-Volta is one Omarchy `bar-widget` made of four source files at the plugin
-root. There is no daemon and no settings file.
+Volta is one Omarchy `bar-widget` made of a few flat source files at the
+plugin root. There is no daemon and no settings file.
 
 ```text
 manifest.json     identity, the bar-widget entry point, empty settings schema
-qmldir            AudioService (singleton) and AudioModel for sibling imports
-Panel.qml         bar mark, tooltip, popup and all input handling
+qmldir            every sibling QML type (a qmldir hides unlisted files)
+Panel.qml         bar button, tooltip, popup layout and all input handling
+StereoStage.qml   popup stage: L/R readouts over the mirrored segment meter
+LevelSlider.qml   one popup row: label, keycaps, value, slider with zones
+KeyHints.qml      a shortcut as keycaps plus a short label
+KeyCap.qml        one key drawn as a keycap
+VoltaMark.qml     the PNG mark recoloured to the theme
 AudioService.qml  the one shared AudioModel + IPC target pym.volta-control
 AudioModel.qml    PipeWire state, Omarchy helper processes, writes, errors
 Model.js          pure maths and text: clamp, channel maps, balance, labels
@@ -20,9 +25,15 @@ tests/            Node tests, channel fixtures, offscreen preview harness
 `BarIconButton` whose icon is `VoltaMark` (the PNG mark recoloured with
 `MultiEffect` to the bar foreground, or the active colour when the popup is
 open, the output is muted or balance is off-centre by 12 % or more). The
-popup is a `KeyboardPanel` with a `PanelHero` header, an output `Dropdown`
-with previous/next buttons, channel sliders (`PanelSlider`, 0-150 %), a
-balance slider (-100 % to +100 %) and Link / Mute / Reset buttons. A
+popup is a `KeyboardPanel` with a `PanelHero` header (state pill and output
+position), an output `Dropdown` with previous/next buttons, a `StereoStage`,
+`LevelSlider` rows for left and right (or volume on mono, 0-150 %) and
+balance (-100 % to +100 %), Link / Mute / Reset toggles and a `KeyHints`
+footer ([ADR 13](adr/0013-stereo-stage-popup.md)). `LevelSlider` keeps
+Omarchy's `PanelSlider` for the knob, drag, wheel and notches and draws the
+track, two-tone fill and over-gain zone itself. Layout maths (`gainSplit`,
+`balanceSpan`, `meterSegment`, `heroMeta`, `heroDetail`, `footerHints`) is
+in `Model.js`. A
 `keyboardRow` cursor and `handleKey` implement the key map in
 [specs/keyboard.md](specs/keyboard.md). The panel sets `manageIpc: false`; its
 IPC lives in `AudioService`.
