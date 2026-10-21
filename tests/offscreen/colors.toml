@@ -1,0 +1,7 @@
+# Sample Omarchy theme for offscreen previews: the shell's built-in defaults
+# with Volta's amber as the accent, so README captures carry the brand colour.
+mode = "dark"
+accent = "#f5a524"
+foreground = "#cacccc"
+background = "#101315"
+muted = "#707880"
