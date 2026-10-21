@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Render the Volta popup offscreen with sample outputs, one PNG per scene.
 # Usage: VOLTA_PREVIEW_DIR=<absolute dir> bash tests/preview.sh
+# VOLTA_PREVIEW_COLORS=<colors.toml> renders under another theme (default:
+# tests/offscreen/colors.toml, the README captures' amber sample).
 # Never opens a window, never talks to PipeWire, never reads the user's config.
 set -euo pipefail
 
@@ -21,16 +23,16 @@ ln -sf "$repo_dir/tests/offscreen/KeyboardPanel.qml" "$work_dir/Ui/KeyboardPanel
 
 # A copy of the plugin with the PipeWire-backed model replaced by sample data.
 mkdir "$work_dir/plugin"
-cp "$repo_dir"/{Panel.qml,AudioService.qml,Model.js,qmldir} "$work_dir/plugin/"
+cp "$repo_dir"/*.qml "$repo_dir"/{Model.js,qmldir} "$work_dir/plugin/"
 cp -r "$repo_dir/assets" "$work_dir/plugin/"
 cp "$repo_dir/tests/offscreen/AudioModel.qml" "$work_dir/plugin/AudioModel.qml"
 # MultiEffect draws nothing on the offscreen software renderer, so show the
 # mark's white source image directly instead of its theme-tinted copy.
-sed -i -e "s/^      visible: false$/      visible: true/" -e "s/^      layer.enabled: true$/      layer.enabled: false/" "$work_dir/plugin/Panel.qml"
+sed -i -e "s/^    visible: false$/    visible: true/" -e "s/^    layer.enabled: true$/    layer.enabled: false/" "$work_dir/plugin/VoltaMark.qml"
 cp "$repo_dir/tests/Preview.qml" "$work_dir/shell.qml"
 
 mkdir -p "$work_dir/home/.local/state/omarchy/current/theme" "$work_dir/runtime"
-cp "$repo_dir/tests/offscreen/colors.toml" "$work_dir/home/.local/state/omarchy/current/theme/colors.toml"
+cp "${VOLTA_PREVIEW_COLORS:-$repo_dir/tests/offscreen/colors.toml}" "$work_dir/home/.local/state/omarchy/current/theme/colors.toml"
 chmod 700 "$work_dir/runtime"
 status=0
 env -u DISPLAY -u WAYLAND_DISPLAY \

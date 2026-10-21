@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import qs.Ui
 import qs.Commons
 import qs.Commons as Commons
@@ -19,6 +18,7 @@ Panel {
   readonly property color foreground: bar ? bar.foreground : Commons.Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
   readonly property color danger: bar ? bar.urgent : Commons.Color.urgent
+  readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
   readonly property int sinkPosition: audio.sinkIndex >= 0 ? audio.sinkIndex + 1 : (audio.sinks.length > 0 ? 1 : 0)
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -107,7 +107,7 @@ Panel {
     id: button
     bar: root.bar
     iconComponent: Component {
-      VoltaMark { tint: button.active ? button.activeColor : button.foreground }
+      Volta.VoltaMark { tint: button.active ? button.activeColor : button.foreground }
     }
     active: root.opened || audio.muted || Math.abs(audio.balance) >= 0.12
     Accessible.role: Accessible.Button
@@ -139,7 +139,7 @@ Panel {
     bar: root.bar
     open: root.opened
     focusTarget: keySurface
-    contentWidth: fittedContentWidth(400)
+    contentWidth: fittedContentWidth(Style.space(400))
     contentHeight: fittedContentHeight(content.implicitHeight)
 
     Item {
@@ -152,138 +152,105 @@ Panel {
       Column {
         id: content
         width: popup.contentWidth - popup.padding * 2
-        spacing: Style.spacing.lg
+        spacing: Style.spacing.xl
 
         PanelHero {
           width: parent.width
           title: "Volta"
-          meta: audio.available
-            ? (audio.mono ? Model.percent(audio.volume) + " volume" : Model.percent(audio.left) + " left  ·  " + Model.percent(audio.right) + " right")
-            : "No output available"
-          detail: audio.muted ? "Muted" : (audio.channelsLocked ? "Linked" : Model.balanceLabel(audio.balance))
+          meta: Model.heroMeta(audio.available, audio.mono, root.sinkPosition, audio.sinks.length)
+          detail: Model.heroDetail(audio.muted, audio.channelsLocked, audio.balance, audio.stereoSupported)
           foreground: root.foreground
-          fontFamily: bar ? bar.fontFamily : Style.font.family
-          iconComponent: Component { VoltaMark { width: Style.space(34); height: Style.space(34); tint: audio.muted ? root.danger : root.foreground } }
+          fontFamily: root.fontFamily
+          iconComponent: Component { Volta.VoltaMark { width: Style.space(34); height: Style.space(34); tint: audio.muted ? root.danger : Commons.Color.accent } }
+        }
+
+        Row {
+          width: parent.width
+          spacing: Style.spacing.xs
+          PanelActionButton { iconText: "󰅁"; tooltipText: "Previous output · Left / Shift+Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(-1); keySurface.forceActiveFocus() } }
+          Dropdown {
+            id: sinkPicker
+            width: parent.width - parent.spacing * 2 - Style.space(44)
+            showLabel: false
+            value: audio.sinkId
+            options: root.displaySinkOptions
+            hasCursor: root.keyboardRow === 0
+            foreground: root.foreground
+            fontFamily: root.fontFamily
+            onChanged: function(value) { audio.selectSinkId(value) }
+            Accessible.role: Accessible.ComboBox
+            Accessible.name: "Output sink"
+          }
+          PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
+        }
+
+        Volta.StereoStage {
+          width: parent.width
+          leftLevel: audio.mono ? audio.volume : audio.left
+          rightLevel: audio.mono ? audio.volume : audio.right
+          mono: audio.mono
+          muted: audio.muted
+          available: audio.available
+          foreground: root.foreground
+          danger: root.danger
+          fontFamily: root.fontFamily
         }
 
         Rectangle {
           visible: audio.error !== "" || !audio.stereoSupported
           width: parent.width
-          height: warningText.implicitHeight + Style.spacing.md * 2
+          height: warningRow.implicitHeight + Style.spacing.lg * 2
           radius: Style.cornerRadius
-          color: Style.hoverFillFor(root.danger, Commons.Color.accent)
-          Text {
-            id: warningText
+          color: Util.alpha(root.danger, 0.12)
+          border.width: Math.max(1, Style.normalBorderWidth)
+          border.color: Util.alpha(root.danger, 0.55)
+          Row {
+            id: warningRow
             anchors.fill: parent
-            anchors.margins: Style.spacing.md
-            text: audio.error !== "" ? audio.error : (audio.mono ? "Mono output: volume and mute remain available; independent channels require stereo." : "This output does not expose front-left and front-right channels.")
-            color: root.foreground
-            font.family: bar ? bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.caption
-            wrapMode: Text.WordWrap
-          }
-        }
-
-        Column {
-          width: parent.width
-          spacing: Style.spacing.xs
-          PanelSectionHeader { text: "OUTPUT  ·  ← / →"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
-          Row {
-            width: parent.width
-            spacing: Style.spacing.xs
-            PanelActionButton { iconText: "󰅁"; tooltipText: "Previous output · Left / Shift+Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(-1); keySurface.forceActiveFocus() } }
-            Dropdown {
-              id: sinkPicker
-              width: parent.width - parent.spacing * 2 - Style.space(44)
-              showLabel: false
-              value: audio.sinkId
-              options: root.displaySinkOptions
-              hasCursor: root.keyboardRow === 0
-              foreground: root.foreground
-              fontFamily: bar ? bar.fontFamily : Style.font.family
-              onChanged: function(value) { audio.selectSinkId(value) }
-              Accessible.role: Accessible.ComboBox
-              Accessible.name: "Output sink"
+            anchors.margins: Style.spacing.lg
+            spacing: Style.spacing.lg
+            Text { id: warningIcon; text: "󰀦"; color: root.danger; font.family: root.fontFamily; font.pixelSize: Style.font.title }
+            Text {
+              width: parent.width - warningIcon.width - parent.spacing
+              anchors.verticalCenter: parent.verticalCenter
+              textFormat: Text.PlainText
+              text: audio.error !== "" ? audio.error : (audio.mono ? "Mono output: volume and mute work; independent channels need stereo." : "This output has no front-left and front-right channels.")
+              color: root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.caption
+              wrapMode: Text.WordWrap
             }
-            PanelActionButton { iconText: "󰅂"; tooltipText: "Next output · Right / Tab"; foreground: root.foreground; enabled: audio.sinks.length > 1; onClicked: { audio.cycleSink(1); keySurface.forceActiveFocus() } }
           }
-          Text { width: parent.width; visible: audio.sinks.length > 1; text: root.sinkPosition + " of " + audio.sinks.length; color: root.subtle; horizontalAlignment: Text.AlignHCenter; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
         }
 
         Column {
           width: parent.width
-          spacing: Style.spacing.sm
-          PanelSectionHeader { text: "CHANNELS"; foreground: root.foreground; fontFamily: bar ? bar.fontFamily : Style.font.family }
-          ChannelSlider { visible: audio.mono; width: parent.width; label: "VOLUME  ·  J / K"; value: audio.volume; enabled: audio.available; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setVolume(value) } }
-          ChannelSlider { visible: !audio.mono; width: parent.width; label: "LEFT  ·  J / K"; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; onMoved: function(value) { audio.setLeft(value) } }
-          ChannelSlider { visible: !audio.mono; width: parent.width; label: "RIGHT  ·  ⇧J / ⇧K"; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; onMoved: function(value) { audio.setRight(value) } }
-        }
-
-        Column {
-          id: balanceSection
-          width: parent.width
-          spacing: Style.spacing.xs
-          Accessible.role: Accessible.Slider
-          Accessible.name: "Stereo balance"
-          Accessible.description: Model.balanceLabel(audio.balance)
-          Row {
-            width: parent.width
-            Text { text: "BALANCE  ·  H / L"; color: root.keyboardRow === 3 ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
-            Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.balanceLabel(audio.balance); color: Math.abs(audio.balance) < 0.005 ? Commons.Color.accent : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
-          }
-          PanelSlider { width: parent.width; value: audio.balance; minimum: -1; maximum: 1; step: 0.05; tickCount: 3; enabled: audio.stereoSupported; fillColor: root.keyboardRow === 3 ? Commons.Color.accent : root.foreground; knobColor: fillColor; onMoved: function(value) { audio.setBalance(value) } }
+          spacing: Style.spacing.xxs
+          Volta.LevelSlider { bar: root.bar; visible: audio.mono; width: parent.width; label: "VOLUME"; keys: ["J", "K"]; value: audio.volume; enabled: audio.available; selected: root.keyboardRow === 1; foreground: root.foreground; danger: root.danger; fontFamily: root.fontFamily; Accessible.role: Accessible.Slider; Accessible.name: "Volume"; Accessible.description: Model.percent(audio.volume); onMoved: function(value) { audio.setVolume(value) } }
+          Volta.LevelSlider { bar: root.bar; visible: !audio.mono; width: parent.width; label: "LEFT"; keys: ["J", "K"]; value: audio.left; enabled: audio.stereoSupported; selected: root.keyboardRow === 1; foreground: root.foreground; danger: root.danger; fontFamily: root.fontFamily; Accessible.role: Accessible.Slider; Accessible.name: "Left"; Accessible.description: Model.percent(audio.left); onMoved: function(value) { audio.setLeft(value) } }
+          Volta.LevelSlider { bar: root.bar; visible: !audio.mono; width: parent.width; label: "RIGHT"; keys: ["⇧J", "⇧K"]; value: audio.right; enabled: audio.stereoSupported; selected: root.keyboardRow === 2; foreground: root.foreground; danger: root.danger; fontFamily: root.fontFamily; Accessible.role: Accessible.Slider; Accessible.name: "Right"; Accessible.description: Model.percent(audio.right); onMoved: function(value) { audio.setRight(value) } }
+          Volta.LevelSlider { bar: root.bar; width: parent.width; label: "BALANCE"; keys: ["H", "L"]; centred: true; minimum: -1; maximum: 1; valueText: Model.balanceLabel(audio.balance); value: audio.balance; enabled: audio.stereoSupported; selected: root.keyboardRow === 3; foreground: root.foreground; danger: root.danger; fontFamily: root.fontFamily; Accessible.role: Accessible.Slider; Accessible.name: "Stereo balance"; Accessible.description: valueText; onMoved: function(value) { audio.setBalance(value) } }
         }
 
         Row {
           width: parent.width
-          spacing: Style.spacing.sm
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.channelsLocked ? "Linked" : "Link") + "  ⇧L"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; selected: root.keyboardRow === 4; active: audio.channelsLocked; enabled: audio.stereoSupported; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.channelsLocked ? "Unlink channels" : "Link channels"; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: (audio.muted ? "Unmute" : "Mute") + "  M"; iconText: audio.muted ? "󰕾" : "󰝟"; selected: root.keyboardRow === 5; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.muted ? "Unmute output" : "Mute output"; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
-          Button { width: (parent.width - parent.spacing * 2) / 3; text: "Reset  R"; iconText: "󰑐"; selected: root.keyboardRow === 6; focusable: true; Accessible.role: Accessible.Button; Accessible.name: "Reset output volume"; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
+          spacing: Style.spacing.md
+          Button { width: (parent.width - parent.spacing * 2) / 3; bordered: true; text: "Link"; iconText: audio.channelsLocked ? "󰌷" : "󰌸"; tooltipText: "Shift+L · Link channels at equal volume"; hasCursor: root.keyboardRow === 4; selected: audio.channelsLocked; enabled: audio.stereoSupported; opacity: enabled ? 1 : 0.45; foreground: root.foreground; fontFamily: root.fontFamily; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.channelsLocked ? "Unlink channels" : "Link channels"; onClicked: { audio.toggleLock(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; bordered: true; text: "Mute"; iconText: "󰝟"; tooltipText: "M · Mute or unmute the output"; hasCursor: root.keyboardRow === 5; selected: audio.muted; accent: audio.muted ? root.danger : Commons.Color.accent; foreground: root.foreground; fontFamily: root.fontFamily; focusable: true; Accessible.role: Accessible.Button; Accessible.name: audio.muted ? "Unmute output" : "Mute output"; onClicked: { audio.toggleMute(); keySurface.forceActiveFocus() } }
+          Button { width: (parent.width - parent.spacing * 2) / 3; bordered: true; text: "Reset"; iconText: "󰑐"; tooltipText: "R · Both channels to 100 % and unlink"; hasCursor: root.keyboardRow === 6; foreground: root.foreground; fontFamily: root.fontFamily; focusable: true; Accessible.role: Accessible.Button; Accessible.name: "Reset output volume"; onClicked: { audio.reset(); keySurface.forceActiveFocus() } }
+        }
+
+        PanelSeparator { foreground: root.foreground }
+
+        Flow {
+          width: parent.width
+          spacing: Style.spacing.xl
+          Repeater {
+            model: Model.footerHints(audio.stereoSupported)
+            Volta.KeyHints { required property var modelData; keys: modelData.keys; label: modelData.label; foreground: root.foreground; fontFamily: root.fontFamily }
+          }
         }
       }
-    }
-  }
-
-  component ChannelSlider: Column {
-    id: channel
-    property string label: ""
-    property real value: 0
-    property bool selected: false
-    signal moved(real value)
-    Accessible.role: Accessible.Slider
-    Accessible.name: label.replace(/\s*·.*$/, "")
-    Accessible.description: Model.percent(value)
-    spacing: Style.spacing.xs
-    opacity: enabled ? 1 : 0.45
-    Row {
-      width: parent.width
-      Text { text: channel.label; color: channel.selected ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
-      Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.percent(channel.value); color: channel.value > 1 ? root.danger : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: channel.value > 1 }
-    }
-    PanelSlider { width: parent.width; value: channel.value; minimum: 0; maximum: 1.5; step: 0.05; tickCount: 4; fillColor: channel.value > 1 ? root.danger : root.foreground; onMoved: function(value) { channel.moved(value) } }
-  }
-
-  component VoltaMark: Item {
-    id: mark
-    property color tint: root.foreground
-    implicitWidth: Style.space(28)
-    implicitHeight: Style.space(28)
-    Image {
-      id: markSource
-      anchors.fill: parent
-      source: "assets/volta-bar-icon.png"
-      fillMode: Image.PreserveAspectFit
-      sourceSize.width: Math.max(64, Math.round(width * 4))
-      sourceSize.height: Math.max(64, Math.round(height * 4))
-      visible: false
-      layer.enabled: true
-    }
-    MultiEffect {
-      anchors.fill: markSource
-      source: markSource
-      colorization: 1.0
-      colorizationColor: mark.tint
     }
   }
 }

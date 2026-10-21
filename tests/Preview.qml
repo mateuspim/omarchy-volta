@@ -15,7 +15,8 @@ ShellRoot {
   readonly property var scenes: [
     { name: "headphones", sinkIndex: 0, left: 0.64, right: 1.18, locked: false, muted: false, mono: false, row: 3 },
     { name: "speakers", sinkIndex: 1, left: 0.8, right: 0.8, locked: true, muted: false, mono: false, row: 0 },
-    { name: "mono", sinkIndex: 2, left: 0.72, right: 0.72, locked: false, muted: false, mono: true, row: 1 }
+    { name: "mono", sinkIndex: 2, left: 0.72, right: 0.72, locked: false, muted: false, mono: true, row: 1 },
+    { name: "muted", sinkIndex: 0, left: 0.9, right: 0.55, locked: false, muted: true, mono: false, row: 5 }
   ]
   property int sceneIndex: 0
   property Item card: null
@@ -30,6 +31,7 @@ ShellRoot {
     property color foreground: Commons.Color.foreground
     property color barForeground: Commons.Color.foreground
     property color urgent: Commons.Color.urgent
+    property color background: Commons.Color.popups.background
     property string fontFamily: Style.font.family
     property bool foregroundAnimationEnabled: false
     property var activePopout: null
@@ -42,7 +44,7 @@ ShellRoot {
   FloatingWindow {
     title: "Volta · sample preview"
     implicitWidth: 520
-    implicitHeight: 760
+    implicitHeight: 960
     color: Commons.Color.background
     Item { id: mount; anchors.fill: parent; anchors.margins: 20 }
   }

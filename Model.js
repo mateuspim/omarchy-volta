@@ -94,3 +94,54 @@ function sinkLabel(node) {
   if (!node) return "No output"
   return safeSinkText(node.description || node.nickname || node.name || "Output")
 }
+
+// Scale the popup draws on: 0–100 % is the normal range and 100–150 % is the
+// over-gain zone (ADR 4), so the zone always starts two thirds along a track.
+var UNITY_FRACTION = 1 / MAX_VOLUME
+
+function isOverGain(value) { return clampVolume(value) > 1.0005 }
+
+// Track fractions for a two-tone volume fill: the part up to 100 % and the
+// over-gain part beyond it. gainSplit(1.2) -> { normal: 0.667, over: 0.133 }
+function gainSplit(value) {
+  var volume = clampVolume(value)
+  return { normal: Math.min(volume, 1) / MAX_VOLUME, over: Math.max(0, volume - 1) / MAX_VOLUME }
+}
+
+// Where the balance fill sits on a 0..1 track: it grows out of the centre
+// detent toward the louder side. balanceSpan(-0.5) -> { from: 0.25, to: 0.5 }
+function balanceSpan(value) {
+  var b = clamp(value, -1, 1)
+  return b < 0 ? { from: 0.5 + b / 2, to: 0.5 } : { from: 0.5, to: 0.5 + b / 2 }
+}
+
+// One segment of the mirrored stage meter, counted outward from the centre in
+// 10 % steps. Segments past the tenth sit in the over-gain zone.
+// meterSegment(11, 1.18) -> "over"; meterSegment(13, 1.18) -> "zone"
+function meterSegment(index, value) {
+  var lit = Math.round(clampVolume(value) * 10) > index
+  var inZone = index >= 10
+  if (lit) return inZone ? "over" : "lit"
+  return inZone ? "zone" : "off"
+}
+
+function heroMeta(available, mono, position, count) {
+  if (!available) return "No output available"
+  var mode = mono ? "Mono" : "Stereo"
+  return count > 1 ? mode + " · output " + position + " of " + count : mode + " output"
+}
+
+function heroDetail(muted, linked, balanceValue, stereo) {
+  if (muted) return "Muted"
+  if (linked) return "Linked"
+  return stereo ? balanceLabel(balanceValue) : ""
+}
+
+// Footer key hints. Per-row keys sit beside their own rows; these are the
+// actions without a row of their own plus the ones worth repeating.
+function footerHints(stereo) {
+  var hints = [{ keys: ["Tab"], label: "output" }]
+  if (stereo) hints.push({ keys: ["⇧L"], label: "link" })
+  hints.push({ keys: ["M"], label: "mute" }, { keys: ["R"], label: "reset" }, { keys: ["Q"], label: "close" })
+  return hints
+}

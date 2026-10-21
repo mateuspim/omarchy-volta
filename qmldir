@@ -1,2 +1,7 @@
 singleton AudioService 1.0 AudioService.qml
 AudioModel 1.0 AudioModel.qml
+VoltaMark 1.0 VoltaMark.qml
+KeyCap 1.0 KeyCap.qml
+KeyHints 1.0 KeyHints.qml
+StereoStage 1.0 StereoStage.qml
+LevelSlider 1.0 LevelSlider.qml
