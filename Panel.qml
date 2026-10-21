@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Effects
 import qs.Ui
 import qs.Commons
+import qs.Commons as Commons
 import "." as Volta
 import "Model.js" as Model
 
@@ -15,9 +16,9 @@ Panel {
   property real wheelAccumulator: 0
   property var displaySinkOptions: []
   readonly property var audio: Volta.AudioService.audio
-  readonly property color foreground: bar ? bar.foreground : Color.foreground
+  readonly property color foreground: bar ? bar.foreground : Commons.Color.foreground
   readonly property color subtle: Qt.darker(foreground, 1.45)
-  readonly property color danger: bar ? bar.urgent : Color.urgent
+  readonly property color danger: bar ? bar.urgent : Commons.Color.urgent
   readonly property int sinkPosition: audio.sinkIndex >= 0 ? audio.sinkIndex + 1 : (audio.sinks.length > 0 ? 1 : 0)
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -170,7 +171,7 @@ Panel {
           width: parent.width
           height: warningText.implicitHeight + Style.spacing.md * 2
           radius: Style.cornerRadius
-          color: Style.hoverFillFor(root.danger, Color.accent)
+          color: Style.hoverFillFor(root.danger, Commons.Color.accent)
           Text {
             id: warningText
             anchors.fill: parent
@@ -228,9 +229,9 @@ Panel {
           Row {
             width: parent.width
             Text { text: "BALANCE  ·  H / L"; color: root.keyboardRow === 3 ? root.foreground : root.subtle; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
-            Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.balanceLabel(audio.balance); color: Math.abs(audio.balance) < 0.005 ? Color.accent : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
+            Text { width: parent.width - x; horizontalAlignment: Text.AlignRight; text: Model.balanceLabel(audio.balance); color: Math.abs(audio.balance) < 0.005 ? Commons.Color.accent : root.foreground; font.family: bar ? bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true }
           }
-          PanelSlider { width: parent.width; value: audio.balance; minimum: -1; maximum: 1; step: 0.05; tickCount: 3; enabled: audio.stereoSupported; fillColor: root.keyboardRow === 3 ? Color.accent : root.foreground; knobColor: fillColor; onMoved: function(value) { audio.setBalance(value) } }
+          PanelSlider { width: parent.width; value: audio.balance; minimum: -1; maximum: 1; step: 0.05; tickCount: 3; enabled: audio.stereoSupported; fillColor: root.keyboardRow === 3 ? Commons.Color.accent : root.foreground; knobColor: fillColor; onMoved: function(value) { audio.setBalance(value) } }
         }
 
         Row {
