@@ -51,8 +51,10 @@ Check UI changes without touching the desktop or PipeWire
 VOLTA_PREVIEW_DIR="$PWD/.preview" bash tests/preview.sh
 ```
 
-It writes `headphones.png`, `speakers.png`, `mono.png` and `muted.png`
-(scenes defined in `tests/Preview.qml`) and fails on QML errors, binding loops or
+It writes `headphones.png`, `speakers.png`, `mono.png`, `muted.png`,
+`six-outputs.png` and `six-outputs-expanded.png` (scenes defined in
+`tests/Preview.qml`; the six-output scenes add sample HDMI and Bluetooth
+outputs) and fails on QML errors, binding loops or
 `Unable to assign` warnings. `QT_SCALE_FACTOR` (default 2) sets the pixel
 density. How it works:
 
@@ -77,9 +79,11 @@ injection on the live monitors.
 
 The README hero is `preview.png` (3840 × 2160) at the repository root. Its
 editable layout is [`docs/brand/preview.svg`](../brand/preview.svg), which
-places two captures from `docs/brand/captures/`: `speakers.png` (Desk
-Speakers, linked at 80 %) behind and `headphones.png` (Studio Headphones,
-64 % / 118 %, balance row focused) in front. All names are samples.
+places two captures from `docs/brand/captures/` side by side:
+`six-outputs.png` (six outputs collapsed to three plus "+3 more", Desk
+Speakers at 80 %) on the left and `headphones.png` (Studio Headphones,
+64 % / 118 %, balance row focused) lower on the right. All names are
+samples.
 
 1. Re-render the captures at 3× so they stay sharp in the hero:
 

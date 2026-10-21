@@ -26,6 +26,7 @@ project's original plan, not from contemporaneous notes.
 | [11](0011-qualify-theme-color-for-qt-6-12.md) | Qualify the theme `Color` as `Commons.Color` (Qt 6.12) | 2026-10-21 | Accepted |
 | [12](0012-offscreen-preview-harness.md) | Render previews offscreen with a fake audio model | 2026-10-21 | Accepted |
 | [13](0013-stereo-stage-popup.md) | Lead the popup with a stereo stage, drawn from theme colours | 2026-10-21 | Accepted |
+| [14](0014-inline-output-list.md) | Pick outputs from an inline list with device icons | 2026-10-21 | Accepted |
 
 ## Rules
 

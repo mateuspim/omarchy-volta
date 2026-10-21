@@ -6,9 +6,14 @@
   meter, sliders with a tinted 100-150 % over-gain zone and a balance fill
   from the centre, keycap hints beside each control, Link and Mute as
   toggles, and a keycap footer. All widget colours come from the theme.
-- Render previews under any theme with `VOLTA_PREVIEW_COLORS`; add a muted
-  preview scene.
-- Refresh the README hero with the new popup.
+- Replace the output dropdown with an inline list: device icon, name,
+  connection and mono note per output, the default marked with an accent
+  check. More than four outputs collapse to three plus "+N more"; Enter
+  expands. The wheel over the list cycles outputs.
+- Render previews under any theme with `VOLTA_PREVIEW_COLORS`; add muted
+  and six-output preview scenes.
+- Refresh the README hero with the new popup, the two captures side by
+  side.
 
 ## 0.2.0 - 2026-10-21
 

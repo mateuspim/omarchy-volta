@@ -22,7 +22,7 @@ on mono.
 
 | Row | Control | `Left` / `Right` | `Enter` / `Return` / `Space` |
 | --- | --- | --- | --- |
-| 0 | Output dropdown | Previous / next output | Open the dropdown |
+| 0 | Output list | Previous / next output | Show or hide the outputs past the first few (more than four outputs only) |
 | 1 | Left (Volume on mono) | -5 % / +5 % | - |
 | 2 | Right | -5 % / +5 % | - |
 | 3 | Balance | 20 % toward left / right | - |
@@ -43,4 +43,7 @@ on mono.
 | `Tab` / `Shift+Tab` | Next / previous output |
 | `q` / `Escape` | Close the popup |
 
-While the output dropdown's list is open, keys go to the dropdown.
+Over the output list, the mouse wheel moves to the previous / next output
+(one step per 120 units of wheel delta) and a click selects an output; an
+expanded list longer than six rows scrolls with the wheel instead
+([ADR 14](../adr/0014-inline-output-list.md)).

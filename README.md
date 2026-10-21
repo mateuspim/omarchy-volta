@@ -1,6 +1,6 @@
 # <img src="icon.svg" alt="" width="32" height="32" align="top"> Volta
 
-![Volta: stereo balance in your Omarchy bar. Two popups with sample outputs, each with large left and right readouts over a mirrored stereo meter: Desk Speakers linked at 80 % per channel, and Studio Headphones at 64 % left and 118 % right, where the meter and slider run into the red over-gain zone and balance sits 46 % right](preview.png)
+![Volta: stereo balance in your Omarchy bar. Two popups with sample outputs, each with a list of outputs (device icon, name and connection, the default marked with an accent check) above large left and right readouts and a mirrored stereo meter: on the left six outputs collapsed to three plus "+3 more" with Desk Speakers at 80 % per channel, on the right Studio Headphones at 64 % left and 118 % right, where the meter and slider run into the red over-gain zone and balance sits 46 % right](preview.png)
 
 **Independent left and right output volume and stereo balance for the
 Omarchy bar, on the native PipeWire API and Omarchy's own output rules.**
@@ -20,7 +20,11 @@ Click the Volta mark in the bar, then use `j`/`k` for the left channel,
   grows out from the centre, so imbalance and over-gain show at a glance.
 - Separate left and right volume sliders, plus a balance control that
   fills from a centre detent and keeps the louder side's level.
-- Link channels, mute, reset to 100 %, and choose the active output.
+- An output list with a device icon, name and connection (USB, Built-in,
+  HDMI, Bluetooth...) per output, and a "mono" note where L/R is not
+  available. Many outputs collapse to the default and its neighbours plus
+  "+N more".
+- Link channels, mute and reset to 100 %.
 - 0-150 % range; the 100-150 % over-gain zone is tinted on every meter
   and slider.
 - Follows Omarchy's speaker tuning and DSP routing, like the system audio
@@ -70,7 +74,7 @@ In the popup:
 | `Tab` / `Shift+Tab` | Next/previous output |
 | `Up` / `Down` | Move between controls |
 | `Left` / `Right` | Previous/next output, or adjust the selected slider |
-| `Enter` / `Space` | Open the output list, or press the selected button |
+| `Enter` / `Space` | Show all outputs (when there are more than four), or press the selected button |
 | `q` / `Escape` | Close |
 
 The full map is in [docs/specs/keyboard.md](docs/specs/keyboard.md).

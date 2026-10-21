@@ -7,6 +7,7 @@ plugin root. There is no daemon and no settings file.
 manifest.json     identity, the bar-widget entry point, empty settings schema
 qmldir            every sibling QML type (a qmldir hides unlisted files)
 Panel.qml         bar button, tooltip, popup layout and all input handling
+OutputList.qml    popup output picker: one row per output, collapses past four
 StereoStage.qml   popup stage: L/R readouts over the mirrored segment meter
 LevelSlider.qml   one popup row: label, keycaps, value, slider with zones
 KeyHints.qml      a shortcut as keycaps plus a short label
@@ -25,8 +26,8 @@ tests/            Node tests, channel fixtures, offscreen preview harness
 `BarIconButton` whose icon is `VoltaMark` (the PNG mark recoloured with
 `MultiEffect` to the bar foreground, or the active colour when the popup is
 open, the output is muted or balance is off-centre by 12 % or more). The
-popup is a `KeyboardPanel` with a `PanelHero` header (state pill and output
-position), an output `Dropdown` with previous/next buttons, a `StereoStage`,
+popup is a `KeyboardPanel` with a `PanelHero` header (state pill), an
+`OutputList` ([ADR 14](adr/0014-inline-output-list.md)), a `StereoStage`,
 `LevelSlider` rows for left and right (or volume on mono, 0-150 %) and
 balance (-100 % to +100 %), Link / Mute / Reset toggles and a `KeyHints`
 footer ([ADR 13](adr/0013-stereo-stage-popup.md)). `LevelSlider` keeps
@@ -45,8 +46,9 @@ IPC lives in `AudioService`.
 
 **`AudioModel.qml`** turns PipeWire into a small reactive surface:
 `available`, `stereoSupported`, `mono`, `left`, `right`, `volume`,
-`balance`, `muted`, `channelsLocked`, `sinks`, `sinkIndex`, `sinkOptions`,
-`sinkLabel` and `error`, plus the write functions (`setLeft`, `setRight`,
+`balance`, `muted`, `channelsLocked`, `sinks`, `sinkIndex`, `sinkEntries`
+(one row per output for the list, from `Model.sinkEntry`), `sinkLabel` and
+`error`, plus the write functions (`setLeft`, `setRight`,
 `setBalance`, `setVolume`, `adjustBoth`, `toggleLock`, `toggleMute`,
 `reset`, `selectSinkId`, `cycleSink`).
 

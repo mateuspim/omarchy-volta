@@ -94,7 +94,7 @@ is the user manual; read its section before changing a feature.
   `Quickshell.Services.Pipewire`, and the three Omarchy audio helpers above.
   Nothing else; no npm runtime dependencies.
 - Reuse Omarchy's public `qs.Ui` components (`Panel`, `KeyboardPanel`,
-  `PanelSlider`, `Dropdown`, ...). Don't copy the built-in `omarchy.audio`
+  `PanelSlider`, `Button`, ...). Don't copy the built-in `omarchy.audio`
   plugin.
 
 ## Public-repo hygiene
