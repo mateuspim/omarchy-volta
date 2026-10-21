@@ -2,6 +2,10 @@
   "name": "omarchy-volta",
   "version": "0.1.0",
   "private": true,
+  "author": "Mateus Pim",
+  "license": "MIT",
   "type": "module",
-  "scripts": { "test": "node tests/model.test.js && node tests/qml.test.js" }
+  "scripts": {
+    "test": "node tests/model.test.js && node tests/qml.test.js"
+  }
 }

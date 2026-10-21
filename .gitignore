@@ -1,3 +1,6 @@
 .qmlls.ini
 result/
 *.log
+
+# Local-only session notes
+HANDOFF.md

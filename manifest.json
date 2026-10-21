@@ -3,7 +3,7 @@
   "id": "pym.volta",
   "name": "Volta",
   "version": "0.1.0",
-  "author": "Mateus Pym",
+  "author": "Mateus Pim",
   "license": "MIT",
   "description": "Per-channel volume and stereo balance controls for Omarchy",
   "kinds": [
