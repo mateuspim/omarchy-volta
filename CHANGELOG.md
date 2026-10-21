@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-10-21
 
 - Redesign the popup: a stereo stage with large L/R readouts over a mirrored
   meter, sliders with a tinted 100-150 % over-gain zone and a balance fill
@@ -14,9 +14,6 @@
   and six-output preview scenes.
 - Refresh the README hero with the new popup, the two captures side by
   side.
-
-## 0.2.0 - 2026-10-21
-
 - Fix theme colours on Qt 6.12: the centred balance label, the focused
   balance slider and warning fill now use `Commons.Color` instead of an
   undefined colour.
