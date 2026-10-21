@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { readdirSync, readFileSync } from "node:fs"
 
 // Qt 6.12's QtQuick exports its own `Color`, which wins an unqualified lookup
-// and turns Omarchy theme colours into undefined (ADR 7). Plugin QML must say
+// and turns Omarchy theme colours into undefined (ADR 11). Plugin QML must say
 // `Commons.Color.x`.
 const root = new URL("../", import.meta.url)
 const files = readdirSync(root).filter(name => name.endsWith(".qml"))
