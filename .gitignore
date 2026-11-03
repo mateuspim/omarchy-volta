@@ -7,3 +7,8 @@ HANDOFF.md
 
 # Offscreen preview output
 .preview/
+
+# Agent entry points are local opt-ins made by scripts/dev-setup (ADR 15);
+# tracked copies would be auto-loaded in every plugin install.
+AGENTS.md
+CLAUDE.md

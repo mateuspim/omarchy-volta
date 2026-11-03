@@ -6,6 +6,6 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "node tests/model.test.js && node tests/qml.test.js"
+    "test": "node tests/model.test.js && node tests/qml.test.js && node tests/repo.test.js"
   }
 }

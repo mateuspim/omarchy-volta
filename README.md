@@ -117,7 +117,9 @@ balance and link are disabled.
 ## Development
 
 Link a checkout to `~/.config/omarchy/plugins/pym.volta`, then run
-`npm test` and `omarchy plugin validate .`. Check UI changes with the
+`npm test` and `omarchy plugin validate .`. Using a coding agent? Run
+`scripts/dev-setup` in your checkout to opt in to the contributor
+instructions; installing the plugin never does this. Check UI changes with the
 offscreen harness (`tests/preview.sh`). Everything is in the
 [development runbook](docs/runbooks/development.md).
 

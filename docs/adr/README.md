@@ -27,6 +27,7 @@ project's original plan, not from contemporaneous notes.
 | [12](0012-offscreen-preview-harness.md) | Render previews offscreen with a fake audio model | 2026-10-21 | Accepted |
 | [13](0013-stereo-stage-popup.md) | Lead the popup with a stereo stage, drawn from theme colours | 2026-10-21 | Accepted |
 | [14](0014-inline-output-list.md) | Pick outputs from an inline list with device icons | 2026-10-21 | Accepted |
+| [15](0015-agent-instructions-are-opt-in.md) | Keep agent instructions out of the install; contributors opt in | 2026-11-03 | Accepted |
 
 ## Rules
 

@@ -7,13 +7,19 @@ is the user manual; read its section before changing a feature.
 `docs/architecture.md` says how the parts fit, `docs/adr/` why,
 `docs/specs/` what the contracts are (IPC actions, keys, settings).
 
+This file is not auto-discovered on purpose: `omarchy plugin add` clones the
+whole repository, so a tracked root `AGENTS.md` or `CLAUDE.md` would load
+these rules into any agent run in an ordinary install (ADR 15). Contributors
+opt in with `scripts/dev-setup`, which creates gitignored root
+`AGENTS.md`/`CLAUDE.md` pointing here.
+
 ## Project
 
 - Layout: every `.qml` and `.js` file at the root. Omarchy loads the one
   entry point in `manifest.json` (`Panel.qml`, a `bar-widget`); QML finds
   every sibling type (`AudioService`, `AudioModel`, the popup components)
   through `qmldir`, so a new component goes in `qmldir` too. Don't add QML
-  subfolders. `assets/volta-bar-icon.png` is the bar and popup mark
+  subfolders. Developer scripts live in `scripts/`. `assets/volta-bar-icon.png` is the bar and popup mark
   (`VoltaMark.qml`). Tests and the offscreen harness in `tests/`, brand
   sources in `docs/brand/`.
 - Pure logic (clamping, channel maps, balance, labels) goes in `Model.js` so
@@ -73,7 +79,7 @@ is the user manual; read its section before changing a feature.
 ## Tests
 
 - `npm test` runs every Node test (`tests/model.test.js`,
-  `tests/qml.test.js`); CI runs the same.
+  `tests/qml.test.js`, `tests/repo.test.js`); CI runs the same.
 - Every new pure function gets a test; bug fixes get a regression test.
   Channel maps come from the JSON fixtures in `tests/fixtures/`.
 - Tests never touch real audio devices or the user's config.
@@ -107,6 +113,10 @@ is the user manual; read its section before changing a feature.
 - Never modify user config on load; Volta changes only audio state, and only
   on an explicit user action.
 - `HANDOFF.md` is local-only and stays gitignored.
+- Never track a file that coding agents load automatically (root or nested
+  `AGENTS.md`/`CLAUDE.md`, `.claude/`, `.cursor/`, `.github/copilot-instructions.md`
+  and the like). The root `AGENTS.md`/`CLAUDE.md` are local, gitignored and
+  made by `scripts/dev-setup` (ADR 15); `tests/repo.test.js` enforces it.
 
 ## Commits and releases
 
