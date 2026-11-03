@@ -32,11 +32,13 @@ made an explicit opt-in.
   `.gemini/`, `.codex/`, `.clinerules`, `.github/copilot-instructions.md` or
   `.github/instructions/`. `tests/repo.test.js` fails on any of them.
 - Root `AGENTS.md` and `CLAUDE.md` are gitignored. Contributors opt in by
-  running `scripts/dev-setup` in a checkout they develop in. It links
-  `AGENTS.md` to the instructions (so tools that read the file get the full
-  text) and writes `CLAUDE.md` as a one-line
-  `@docs/contributing/agent-instructions.md` import. It never overwrites a
-  file it did not create, and `--remove` undoes it.
+  running `scripts/dev-setup` in a checkout they develop in. It writes
+  `CLAUDE.md` as a one-line `@docs/contributing/agent-instructions.md`
+  import and `AGENTS.md` as a short pointer telling agents to read that
+  file. `AGENTS.md` is not a symlink because `omarchy-plugin-validate`
+  rejects any symlink in a plugin folder, and a development checkout is
+  usually linked as the plugin. The script never overwrites a file it did
+  not create, and `--remove` undoes it.
 - The opt-in is documented as a development step in `CONTRIBUTING.md`, the
   README's Development section and the development runbook, never under
   Install.
@@ -45,6 +47,8 @@ made an explicit opt-in.
 
 - An ordinary install carries the instructions only as an inert Markdown
   file under `docs/`; agents run there see nothing unless asked to read it.
+- Tools that read only `AGENTS.md` get a pointer, not the text, and must
+  open the instructions file; they generally do when told to.
 - A fresh contributor clone has no agent instructions until
   `scripts/dev-setup` runs; the docs say to run it first.
 - A checkout linked as the plugin directory (the development setup) does

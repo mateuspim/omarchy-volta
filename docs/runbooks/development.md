@@ -18,9 +18,10 @@ omarchy plugin enable pym.volta
 scripts/dev-setup   # only if you use a coding agent
 ```
 
-`scripts/dev-setup` is the contributor opt-in for coding agents: it links a
-gitignored root `AGENTS.md` to `docs/contributing/agent-instructions.md` and
-writes a gitignored `CLAUDE.md` that imports it. It refuses to overwrite
+`scripts/dev-setup` is the contributor opt-in for coding agents: it writes a
+gitignored root `AGENTS.md` that points at
+`docs/contributing/agent-instructions.md` and a gitignored `CLAUDE.md` that
+imports it (regular files: the validator rejects symlinks). It refuses to overwrite
 files it did not create; `--remove` deletes them. The files are not tracked
 because every tracked file reaches ordinary installs
 ([ADR 15](../adr/0015-agent-instructions-are-opt-in.md)).

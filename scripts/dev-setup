@@ -17,36 +17,42 @@ root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd) || {
 }
 instructions="docs/contributing/agent-instructions.md"
 claude_line="@$instructions"
+# A regular file, not a symlink: omarchy-plugin-validate rejects any symlink
+# inside a plugin folder, and a dev checkout is often linked as the plugin.
+agents_text="# Volta agent instructions (local opt-in)
+
+Read and follow $instructions before working in this repository.
+This file is gitignored and made by scripts/dev-setup (ADR 15); do not commit it."
 status=0
 
 usage() {
   echo "Usage: scripts/dev-setup [--remove]"
-  echo "Creates gitignored AGENTS.md (symlink) and CLAUDE.md (import) at the"
+  echo "Creates gitignored AGENTS.md (pointer) and CLAUDE.md (import) at the"
   echo "repository root, pointing at $instructions."
 }
 
 agents_is_ours() {
-  [[ -L $root/AGENTS.md && $(readlink -- "$root/AGENTS.md") == "$instructions" ]]
+  [[ -f $root/AGENTS.md && ! -L $root/AGENTS.md && $(cat -- "$root/AGENTS.md") == "$agents_text" ]]
 }
 
 claude_is_ours() {
   [[ -f $root/CLAUDE.md && ! -L $root/CLAUDE.md && $(cat -- "$root/CLAUDE.md") == "$claude_line" ]]
 }
 
-link_agents() {
+write_agents() {
   if agents_is_ours; then
     echo "AGENTS.md already points at $instructions"
     return
   fi
   if [[ -e $root/AGENTS.md || -L $root/AGENTS.md ]]; then
-    echo "dev-setup: AGENTS.md exists and is not Volta's link; left it unchanged" >&2
+    echo "dev-setup: AGENTS.md exists and is not Volta's pointer; left it unchanged" >&2
     status=1
     return
   fi
-  if ln -s -- "$instructions" "$root/AGENTS.md"; then
-    echo "Linked AGENTS.md -> $instructions"
+  if printf '%s\n' "$agents_text" > "$root/AGENTS.md"; then
+    echo "Wrote AGENTS.md pointing at $instructions"
   else
-    echo "dev-setup: could not create AGENTS.md; agents will not see the instructions" >&2
+    echo "dev-setup: could not write AGENTS.md; agents will not see the instructions" >&2
     status=1
   fi
 }
@@ -100,7 +106,7 @@ case ${1:-} in
       echo "dev-setup: $instructions is missing; nothing was changed" >&2
       exit 1
     fi
-    link_agents
+    write_agents
     write_claude
     check_ignored
     ;;
