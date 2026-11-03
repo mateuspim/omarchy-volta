@@ -18,4 +18,6 @@
   [settings and manifest](specs/settings.md).
 - [Development runbook](runbooks/development.md): setup, tests, offscreen
   previews, refreshing the README hero, releases.
-- [Contributing](../CONTRIBUTING.md) and [agent instructions](../AGENTS.md).
+- [Contributing](../CONTRIBUTING.md) and
+  [agent instructions](contributing/agent-instructions.md) (opt in with
+  `scripts/dev-setup`, see [ADR 15](adr/0015-agent-instructions-are-opt-in.md)).

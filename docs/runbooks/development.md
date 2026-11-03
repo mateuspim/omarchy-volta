@@ -15,7 +15,16 @@ cd omarchy-volta
 omarchy plugin validate .
 omarchy-shell shell rescanPlugins
 omarchy plugin enable pym.volta
+scripts/dev-setup   # only if you use a coding agent
 ```
+
+`scripts/dev-setup` is the contributor opt-in for coding agents: it writes a
+gitignored root `AGENTS.md` that points at
+`docs/contributing/agent-instructions.md` and a gitignored `CLAUDE.md` that
+imports it (regular files: the validator rejects symlinks). It refuses to overwrite
+files it did not create; `--remove` deletes them. The files are not tracked
+because every tracked file reaches ordinary installs
+([ADR 15](../adr/0015-agent-instructions-are-opt-in.md)).
 
 Changes under the plugin directory hot-reload with the shell. Watch the live
 log (read-only) while you work:
@@ -39,7 +48,9 @@ omarchy plugin validate .
 `npm test` runs `tests/model.test.js` (clamping, channel maps from
 `tests/fixtures/*.json`, balance, labels and escaping) and
 `tests/qml.test.js` (no bare `Color.` in QML, see
-[ADR 11](../adr/0011-qualify-theme-color-for-qt-6-12.md)). GitHub Actions runs
+[ADR 11](../adr/0011-qualify-theme-color-for-qt-6-12.md)) and
+`tests/repo.test.js` (no tracked file that coding agents auto-load, see
+[ADR 15](../adr/0015-agent-instructions-are-opt-in.md)). GitHub Actions runs
 `npm test` on every push and pull request.
 
 ## Offscreen previews

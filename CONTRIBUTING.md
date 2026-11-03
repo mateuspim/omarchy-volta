@@ -9,8 +9,9 @@ requests are welcome.
   Volta is deliberately a focused stereo control, not a mixer
   ([ADR 3](docs/adr/0003-focused-scope-not-a-mixer.md)).
 - Security problems: follow [SECURITY.md](SECURITY.md), not a public issue.
-- Read [AGENTS.md](AGENTS.md): it holds the code rules for people and coding
-  agents alike, and [docs/architecture.md](docs/architecture.md).
+- Read the [agent instructions](docs/contributing/agent-instructions.md):
+  they hold the code rules for people and coding agents alike, and
+  [docs/architecture.md](docs/architecture.md).
 
 ## Set up
 
@@ -23,6 +24,19 @@ ln -s "$PWD/omarchy-volta" ~/.config/omarchy/plugins/pym.volta
 omarchy-shell shell rescanPlugins
 omarchy plugin enable pym.volta
 ```
+
+If you use a coding agent, opt this checkout in to the contributor rules:
+
+```sh
+cd omarchy-volta
+scripts/dev-setup
+```
+
+It creates gitignored root `AGENTS.md` and `CLAUDE.md` that point at
+`docs/contributing/agent-instructions.md`. They are not tracked because
+`omarchy plugin add` clones the whole repository, and agents would load them
+in every ordinary install ([ADR 15](docs/adr/0015-agent-instructions-are-opt-in.md)).
+Never commit them; `scripts/dev-setup --remove` deletes them.
 
 Edits hot-reload with the shell. Never edit files under `/usr/share/omarchy`.
 More in the [development runbook](docs/runbooks/development.md).
@@ -48,6 +62,7 @@ body that explains why.
 - [ ] `npm test` passes and `omarchy plugin validate .` exits 0
 - [ ] Docs and CHANGELOG updated
 - [ ] No personal paths, device names, serials or addresses in tracked files
+- [ ] No tracked `AGENTS.md`, `CLAUDE.md` or other agent config files
 
 ## License
 
