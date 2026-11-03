@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 - 2026-11-03
+
+- Keep the contributor and agent instructions out of automatic agent
+  discovery: they move from the root `AGENTS.md`/`CLAUDE.md` to
+  `docs/contributing/agent-instructions.md`, so an ordinary
+  `omarchy plugin add` install no longer loads them into coding agents.
+  Contributors opt in with `scripts/dev-setup`, which creates gitignored
+  root entry points (ADR 15).
+- Add `tests/repo.test.js`, which fails if a file that coding agents load
+  automatically is tracked.
+
 ## 0.2.0 - 2026-10-21
 
 - Redesign the popup: a stereo stage with large L/R readouts over a mirrored
